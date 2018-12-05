@@ -1,13 +1,13 @@
 ## HELPER FUNCTIONS CLASS ##
 
-from IMPORT_MODULES import *
+from import_modules import *
 
 class helper_funcs():
-    
+
     def __init__():
         """ helper functions used across the pipeline """
         return None
-    
+
     ## find and append multiple dataframes of the type specified in string
     def append_datasets(cols_to_remove, string = ['train', 'valid']):
         # pass either train or valid as str argument
@@ -27,7 +27,7 @@ class helper_funcs():
         else :
             temp = temp_list[0]
         return temp
-    
+
     ## datetime feature engineering
     def datetime_feats(train, valid):
         cols = [s for s in train.columns.values if 'date' in s]
@@ -54,11 +54,11 @@ class helper_funcs():
             train = dt_feats(train, i)
             valid = dt_feats(valid, i)
         return train, valid
-    
+
     ## function to get frequency count of elements in a vector/list
     def freq_count(input_vector):
         return collections.Counter(input_vector)
-    
+
     ## function to make deviation encoding features
     def categ_feat_eng(train_df, valid_df, cat_columns):
         print('categorical feature engineering is happening ...', '\n')
@@ -75,10 +75,10 @@ class helper_funcs():
 
 
 #### LOOP BREAK FUNCTION ####
-""" 
+"""
 To allow early exit of loops or conditional statements to handle exceptions/errors
 Allows exit() to work if script is invoked with IPython without
-raising NameError Exception. Keeps kernel alive.   
+raising NameError Exception. Keeps kernel alive.
 """
 
 class IpyExit(SystemExit):

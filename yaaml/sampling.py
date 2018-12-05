@@ -15,11 +15,11 @@
 #ENN worked out better than Tomek
 #added support for undersampling with ENN/RENN/AllKNN """
 
-from IMPORT_MODULES import *
+from import_modules import *
 
 def sampler(X_train, y_train, which='smote_enn', frac=0.75):
     """ which = ['adasyn', smote_tomek', 'smote_enn', 'enn', 'renn', 'allknn'] """
-    
+
     feat_names = X_train.columns.values
     print('Sampling is being done..\n')
 
@@ -55,5 +55,5 @@ def sampler(X_train, y_train, which='smote_enn', frac=0.75):
 
     X_train = pd.DataFrame(data=X_train,columns=feat_names)
     print(X_train.shape, y_train.shape, collections.Counter(y_train))
-    
+
     return X_train, y_train

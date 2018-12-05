@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="yaaml",
-    version="0.0.1",
+    version="0.0.2",
     author="Varun Rajan",
     author_email="varunrajan7@gmail.com",
     description="Yet-Another-Auto-ML",
@@ -17,6 +17,6 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
-        "Operating System :: Windows",
+        "Operating System :: Microsoft :: Windows :: Windows 10",
     ],
 )

@@ -1,8 +1,6 @@
 # import all the necessary modules
-import import_modules
-import helper_funcs
-import miss_imputation
-import encoding
-import feature_engineering
-import feature_selection
-import sampling
+
+import .main
+
+__version__ = '0.0.2'
+__author__ = 'varunrajan'

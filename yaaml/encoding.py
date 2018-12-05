@@ -7,10 +7,10 @@
 #    - ordinal encoder (similar to label, different implementation)
 #    - one-hot encoder
 
-from IMPORT_MODULES import *
+from import_modules import *
 
 class categ_encoders():
-    
+
     def  __init__():
         """ return nothing. do nothing. """
 
@@ -21,9 +21,9 @@ class categ_encoders():
             train, valid, categorical_names = categ_encoders.ce_encodings(train, valid, y_train, y_valid, which)
         else :
             print('Not supported. Use one of [be, bne, he, oe, ohe]', '\n')
-            exit()            
+            exit()
         return train, valid, categorical_names
-        
+
     def labelEncoder(train_df, valid_df):
         print('label encoding is happening ...', '\n')
         cat_columns = train_df.select_dtypes(include=['object']).columns.values
@@ -40,10 +40,10 @@ class categ_encoders():
             categorical_names[feature] = le.classes_
         print('label encoding completed', '\n')
         return train_df, valid_df, categorical_names
-        
+
     def ce_encodings(train_df, valid_df, y_train, y_valid, encoding):
         print(str(encoding) + ' encoding is happening ...', '\n')
-        if encoding=='bne':    
+        if encoding=='bne':
             enc=ce.BaseNEncoder(base=3)
         elif encoding=='be':
             enc=ce.BinaryEncoder()

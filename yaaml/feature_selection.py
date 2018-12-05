@@ -2,10 +2,10 @@
 #- near zero variance columns are removed (threshold=0.1)
 #- rf based rfecv with depth=7, column_sampling=0.25, estimators=100 (optional=True/False)
 
-from IMPORT_MODULES import *
+from import_modules import *
 
 class feat_selection():
-    
+
     def __init__():
         """ this module is for dynamic feature selection after all the processing and feat engineering phases. ideally this
         module is followed by the modelling phase immediately """
@@ -41,7 +41,7 @@ class feat_selection():
         train = train[features]
         valid = valid[features]
         return train, valid
-    
+
     def feat_selection(train, valid, y_train, t=0.2):
         # read in the train, valid and y_train objects
         X, Y = feat_selection.variance_threshold_selector(train, valid, threshold=t)
