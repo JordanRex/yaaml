@@ -1,10 +1,13 @@
-#### FEATURE SELECTION ####
+# FEATURE SELECTION
 #- near zero variance columns are removed (threshold=0.1)
 #- rf based rfecv with depth=7, column_sampling=0.25, estimators=100 (optional=True/False)
 
-from import_modules import *
+from sklearn.feature_selection import RFECV, VarianceThreshold
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
 
-class feat_selection():
+
+class feat_selection:
 
     def __init__():
         """ this module is for dynamic feature selection after all the processing and feat engineering phases. ideally this
@@ -17,7 +20,6 @@ class feat_selection():
         selector.fit(train)
         X = train[train.columns[selector.get_support(indices=True)]]
         Y = valid[valid.columns[selector.get_support(indices=True)]]
-        #display(pd.DataFrame(X.head(5)))
         print('output data shape is: ', X.shape, '\n')
         return X, Y
 
@@ -37,7 +39,7 @@ class feat_selection():
         plt.plot(range(1, len(rfecv.grid_scores_) + 1), rfecv.grid_scores_)
         plt.show()
 
-        features = [f for f,s in zip(train.columns, rfecv.support_) if s]
+        features = [f for f, s in zip(train.columns, rfecv.support_) if s]
         train = train[features]
         valid = valid[features]
         return train, valid

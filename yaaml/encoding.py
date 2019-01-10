@@ -1,4 +1,4 @@
-#### ENCODING CLASS ####
+# ENCODING CLASS
 #- various types of encoding here
 #    - label encoder
 #    - binary encoder
@@ -7,15 +7,17 @@
 #    - ordinal encoder (similar to label, different implementation)
 #    - one-hot encoder
 
-from import_modules import *
+from tqdm import tqdm
+import category_encoders as ce
 
-class categ_encoders():
 
+class categ_encoders:
+    
     def  __init__():
         """ return nothing. do nothing. """
 
     def encoding(train, valid, y_train, y_valid, which=['le', 'be', 'bne', 'ohe', 'he', 'oe']):
-        if which=='le':
+        if which == 'le':
             train, valid, categorical_names = categ_encoders.labelEncoder(train, valid)
         elif which in ['be', 'bne', 'ohe', 'he', 'oe']:
             train, valid, categorical_names = categ_encoders.ce_encodings(train, valid, y_train, y_valid, which)
@@ -29,7 +31,7 @@ class categ_encoders():
         cat_columns = train_df.select_dtypes(include=['object']).columns.values
         categorical_names = {}
         for feature in tqdm(cat_columns):
-            le = preprocessing.LabelEncoder()
+            le = sklearn.preprocessing.LabelEncoder()
             le.fit(train_df[feature].astype(str))
             train_df[feature] = le.transform(train_df[feature].astype(str))
             valid_df[feature] = valid_df[feature].map(lambda i: 'No Data' if i not in le.classes_ else i)

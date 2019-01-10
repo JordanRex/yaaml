@@ -13,8 +13,11 @@
 #- Deterministic features
 #    - Binning
 #    - ...
+from sklearn.cluster import KMeans
+import sklearn.decomposition as decomposition
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+import sklearn.random_projection as rp
 
-from import_modules import *
 
 class feat_eng(object):
 
@@ -47,7 +50,7 @@ class feat_eng(object):
             elif i in ['FastICA', 'TruncatedSVD']:
                 decomp_obj = getattr(decomposition, i)
                 decomp_obj = decomp_obj(n_components=n)
-            else :
+            else:
                 decomp_obj = getattr(rp, i)
                 decomp_obj = decomp_obj(n_components=n, eps=0.3)
 
@@ -74,7 +77,7 @@ class feat_eng(object):
         for i in list(self.df.keys()):
             if bool(re.search('train', i)):
                 train = pd.concat([train.reset_index(drop=True), self.df[i]], axis=1)
-            else :
+            else:
                 valid = pd.concat([valid.reset_index(drop=True), self.df[i]], axis=1)
         return train, valid
 
@@ -90,7 +93,7 @@ class feat_eng(object):
         print('m is ', m, '\n')
         for i in range(2, m):
             t, v = feat_eng.kmeans_clusterer(train_df, valid_df, n=i)
-            col_name = str('kmeans_'+ str(i))
+            col_name = str('kmeans_' + str(i))
             t = pd.DataFrame({col_name: t})
             v = pd.DataFrame({col_name: v})
             train_df = pd.concat([train_df.reset_index(drop=True), t], axis=1)

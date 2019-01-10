@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="yaaml",
-    version="0.0.2",
+    version="0.0.4",
     author="Varun Rajan",
     author_email="varunrajan7@gmail.com",
     description="Yet-Another-Auto-ML",
