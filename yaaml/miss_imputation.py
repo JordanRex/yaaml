@@ -35,20 +35,19 @@ class DataFrameImputer(TransformerMixin):
         x = Imputer(missing_values = 'NaN', strategy=method, axis=0)
         return x.fit_transform(self[[column]]).ravel()
 
-    def fancy_impute(X, which_method):
+    def fancy_impute(self, X, Y=None, which_method='IterativeImputer'):
         """ currently supported algorithms are KNN, NNM and MICE from the fancyimpute package
-        which_method = ['KNN', 'NNM', 'MICE']
+        which_method = ['KNN', 'NNM', 'IterativeImputer']
         """
         print(which_method, ' based missing value imputation is happening ...', '\n')
-
-        if which_method == 'NNM':
-            X = NuclearNormMinimization().complete(X)  # NNM method
-        if which_method == 'KNN':
-            X = KNN(k=5, verbose=False).complete(X)  # KNN method
-        if which_method == 'MICE':
-            x = X.copy()
-            mice = MICE(verbose=False)
-            x = mice.complete(np.asarray(x.values, dtype=float))
-            x.loc[:, X.columns] = x[:][:]
+        
+        if which_method == 'NNM': X = NuclearNormMinimization().complete(X) # NNM method
+        if which_method == 'KNN': X = KNN(k=5, verbose=False).complete(X) # KNN method
+        
+        if which_method == 'IterativeImputer':
+            imputer = IterativeImputer()
+            imputer.fit(X.values)
+            X_new = pd.DataFrame(data=imputer.transform(X.values), columns=X.columns)
+            Y_new = pd.DataFrame(data=imputer.transform(Y.values), columns=Y.columns)
         print('missing value imputation completed', '\n')
-        return x
+        return X_new, Y_new

@@ -193,7 +193,7 @@ class Main:
             miss_enc.fit(X=train)
             train_new = miss_enc.transform(train)
             valid_new = miss_enc.transform(valid)
-        elif params['miss_treatment'] in ['KNN', 'MICE']:
+        elif params['miss_treatment'] in ['KNN', 'IterativeImputer']:
             train_new = DataFrameImputer.fancy_impute(train, which_method=params['miss_treatment'])
             valid_new = DataFrameImputer.fancy_impute(valid, which_method=params['miss_treatment'])
 
@@ -307,17 +307,17 @@ class Main:
 
         # space to be traversed for the hyperopt function
         space = {
-            'encoder': hp.choice('encoder', ['he', 'le']),
+            'encoder': hp.choice('encoder', ['oe', 'he', 'ohe', 'be']),
             'eval_time': time.time(),
-            'miss_treatment': hp.choice('missing', ['simple']),
+            'miss_treatment': hp.choice('missing', ['simple', 'KNN', 'IterativeImputer']),
             'decomp_feats': hp.quniform('n', 2, 5, 1),
             'scaler': hp.choice('scaler', ['ss', 'mm']),
             'kmeans_n': hp.quniform('m', 2, 3, 1),
-            'feat_selection': hp.choice('rfecv', ['false', 'false']),
+            'feat_selection': hp.choice('rfecv', ['true', 'false']),
             'sampler': hp.choice('sampler', [
                 {
-                    'choice': 'no',
-                    'which_method': hp.choice('sampling', ['smote_enn']),
+                    'choice': 'yes',
+                    'which_method': hp.choice('sampling', ['smote_enn', 'smote_tomek']),
                     'frac': hp.quniform('frac', 0.75, 1, 0.05)
                 },
                 {
@@ -328,7 +328,7 @@ class Main:
                 {
                     'undersampling': hp.uniform('us', 0.1, 1),
                     'oversampling': hp.uniform('os', 1, 5),
-                    'balance_classes': hp.choice('bc', ['False', 'False'])
+                    'balance_classes': hp.choice('bc', ['True', 'False'])
                 }
             ])
         }

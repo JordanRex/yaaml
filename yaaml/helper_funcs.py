@@ -61,15 +61,80 @@ class helper_funcs:
         return Counter(input_vector)
 
     # function to make deviation encoding features
-    def categ_feat_eng(self, train_df, valid_df, cat_columns):
+    def categ_feat_eng(self, train_df, valid_df, cat_columns, response):
         print('categorical feature engineering is happening ...', '\n')
         global iter
         iter = 0
         for i in tqdm(cat_columns):
-            grouped_df = pd.DataFrame(train_df.groupby([i])['label'].agg(['mean', 'std'])).reset_index()
+            grouped_df = pd.DataFrame(train_df.groupby([i])[response].agg(['mean', 'std'])).reset_index()
             grouped_df.rename(columns={'mean': str('mean_' + cat_columns[iter]),
                                        'std': str('std_' + cat_columns[iter])}, inplace=True)
             train_df = pd.merge(train_df, grouped_df, how='left')
             valid_df = pd.merge(valid_df, grouped_df, how='left')
             iter += 1
         return train_df, valid_df
+    
+    # for reading files
+    def csv_read(self, file_path, cols_to_keep=None, dtype=None):
+        self.cols_to_keep = cols_to_keep
+        if dtype is None:
+          x=pd.read_csv(file_path, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'], encoding='latin-1', low_memory=False)
+        else:
+          x=pd.read_csv(file_path, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'], encoding='latin-1', low_memory=False, dtype=dtype)
+        chars_to_remove = [' ', '.', '(', ')', '__', '-', '/', '\'']
+        for i in chars_to_remove:
+            x.columns = x.columns.str.strip().str.lower().str.replace(i, '_')
+        if cols_to_keep is not None: x = x[cols_to_keep]
+        x.drop_duplicates(inplace=True)
+        print(x.shape)
+        return x
+    
+    def txt_read(self, file_path, cols_to_keep=None, sep='|', skiprows=1, dtype=None):
+        # currently only supports salary files with the default values (need to implement dynamic programming for any generic txt)
+        self.cols_to_keep = cols_to_keep
+        if dtype is None:
+          x=pd.read_table(file_path, sep=sep, skiprows=skiprows, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'])
+        else:
+          x=pd.read_table(file_path, sep=sep, skiprows=skiprows, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'], dtype=dtype)
+        chars_to_remove = [' ', '.', '(', ')', '__', '-', '/', '\'']
+        for i in chars_to_remove:
+            x.columns = x.columns.str.strip().str.lower().str.replace(i, '_')
+        if cols_to_keep is not None: x = x[cols_to_keep]
+        x.drop_duplicates(inplace=True)
+        print(x.shape)
+        return x
+
+    def xlsx_read(self, file_path, cols_to_keep=None, sheet_name=0, dtype=None):
+        self.cols_to_keep = cols_to_keep
+        if dtype is None:
+          x=pd.read_excel(file_path, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'], sheet_name=sheet_name)
+        else:
+          x=pd.read_excel(file_path, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'], sheet_name=sheet_name, dtype=dtype)
+        chars_to_remove = [' ', '.', '(', ')', '__', '-', '/', '\'']
+        for i in chars_to_remove:
+            x.columns = x.columns.str.strip().str.lower().str.replace(i, '_')
+        if cols_to_keep is not None: x = x[cols_to_keep]
+        x.drop_duplicates(inplace=True)
+        print(x.shape)
+        return x
+    
+    def process_columns(self, df, cols=None):
+        if cols is None:
+            df = df.apply(lambda x: x.str.lower() if (x.dtype == 'object') else x)
+            df = df.apply(lambda x: x.str.strip() if (x.dtype == 'object') else x)
+            df = df.apply(lambda x: x.str.replace('\s+|\s', '_', regex=True) if (x.dtype == 'object') else x)
+            df = df.apply(lambda x: x.str.replace('[^\w+\s+]', '_', regex=True) if (x.dtype == 'object') else x)
+            df = df.apply(lambda x: x.str.replace('\_+', '_', regex=True) if (x.dtype == 'object') else x)
+        else:
+            df = df.apply(lambda x: x.str.lower() if x.name in cols else x)
+            df = df.apply(lambda x: x.str.strip() if x.name in cols else x)
+            df = df.apply(lambda x: x.str.replace('\s+|\s', '_', regex=True) if x.name in cols else x)
+            df = df.apply(lambda x: x.str.replace('[^\w+\s+]', '_', regex=True) if x.name in cols else x)
+            df = df.apply(lambda x: x.str.replace('\_+', '_', regex=True) if x.name in cols else x)
+        return df
+  
+    def nlp_process_columns(self, df, nlp_cols):
+        df = df.apply(lambda x: x.str.replace('_', ' ') if x.name in nlp_cols else x)
+        df = df.apply(lambda x: x.str.replace('\s+', ' ', regex=True) if x.name in nlp_cols else x)
+        df = df.apply(lambda x: x.str.replace('crft', 'craft') if x.name in nlp_cols else x)
+        return df
