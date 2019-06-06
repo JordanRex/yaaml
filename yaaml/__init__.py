@@ -17,6 +17,7 @@ from sklearn.model_selection import train_test_split, cross_val_score, Stratifie
 from sklearn import metrics, preprocessing
 from sklearn.base import TransformerMixin
 from sklearn.utils import shuffle
+from sklearn.preprocessing import LabelEncoder
 
 # hyperopt modules
 from bayes_opt import BayesianOptimization
@@ -33,22 +34,17 @@ from hyperopt.pyll.stochastic import sample
 # from sklearn.svm import OneClassSVM
 
 # main modules from root same directory
-import helper_funcs
-import miss_imputation
-import encoding
-import feature_engineering
-import feature_selection
-import sampling
-
-# h2o imports
-import h2o
-from h2o.automl import H2OAutoML
-
+import helper_funcs as helpers
+import miss_imputation as missimp
+import encoding as encoders
+import feature_engineering as feateng
+import feature_selection as featsel
+from sampling import sampler
 
 # call the main script
 import main
 
-__version__ = '0.0.4'
+__version__ = '0.0.5'
 __author__ = 'varunrajan'
 __name__ = 'yaaml'
-__org__ = 'themathco'
+__org__ = '...'

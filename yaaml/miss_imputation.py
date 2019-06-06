@@ -8,7 +8,7 @@
 #    - requires encoding to be done prior
 
 from sklearn.base import TransformerMixin
-from fancyimpute import KNN, MICE, NuclearNormMinimization
+from fancyimpute import KNN, IterativeImputer, NuclearNormMinimization
 
 
 class DataFrameImputer(TransformerMixin):

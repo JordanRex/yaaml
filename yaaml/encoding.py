@@ -11,9 +11,9 @@ from tqdm import tqdm
 import category_encoders as ce
 
 
-class categ_encoders:
+class categ_encoders():
     
-    def  __init__():
+    def  __init__(self):
         """ return nothing. do nothing. """
 
     def encoding(train, valid, y_train, y_valid, which=['le', 'be', 'bne', 'ohe', 'he', 'oe']):

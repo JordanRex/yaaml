@@ -13,22 +13,24 @@
 #- Deterministic features
 #    - Binning
 #    - ...
+
 from sklearn.cluster import KMeans
 import sklearn.decomposition as decomposition
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import sklearn.random_projection as rp
+import pandas as pd
 
 # global function to flatten columns after a grouped operation and aggregation
 # outside all classes since it is added as an attribute to pandas DataFrames
 def __my_flatten_cols(self, how="_".join, reset_index=True):
-  how = (lambda iter: list(iter)[-1]) if how == "last" else how
-  self.columns = [how(filter(None, map(str, levels))) for levels in self.columns.values] \
-  if isinstance(self.columns, pd.MultiIndex) else self.columns
-  return self.reset_index(drop=True) if reset_index else self
+    how = (lambda iter: list(iter)[-1]) if how == "last" else how
+    self.columns = [how(filter(None, map(str, levels))) for levels in self.columns.values] \
+    if isinstance(self.columns, pd.MultiIndex) else self.columns
+    return self.reset_index(drop=True) if reset_index else self
 pd.DataFrame.my_flatten_cols = __my_flatten_cols
 
 
-class feat_eng(object):
+class feature_engineering_class():
 
     def __init__(self):
         """ this module contains several functions for creating new features. find below a brief description of each """
@@ -40,7 +42,7 @@ class feat_eng(object):
             train_new = pd.DataFrame(sc.transform(train), columns=train.columns.values)
             valid_new = pd.DataFrame(sc.transform(valid), columns=valid.columns.values)
             return train_new, valid_new # scale all variables to zero mean and unit variance, required for PCA and related
-        if which_method == 'mm':
+        if which_method == 'mm': # scales to range (0,1) by default
             mm = MinMaxScaler()
             mm.fit(train)
             train_new = pd.DataFrame(mm.transform(train), columns=train.columns.values)
@@ -109,39 +111,28 @@ class feat_eng(object):
             valid_df = pd.concat([valid_df.reset_index(drop=True), v], axis=1)
         return train_df, valid_df
 
-    def group_agg_feats(
-        self,
-        df,
-        group_cols,
-        agg_col,
-        new_cols,
-        ):
-        df_grp = df.groupby(group_cols, as_index=False).agg({agg_col: ['sum', 'mean']}).my_flatten_cols()
-        df_grp.columns = new_cols
-        df = df.merge(df_grp, how='left')
+    def group_agg_feats(self, df, group_cols, agg_col, new_cols):
+        df_grp = df.groupby(group_cols, group_keys=False).apply(lambda x: x.sample(frac=len(x) * .667)).reset_index()
+        df_grp_new = df_grp.groupby(group_cols, as_index=False).agg({agg_col: ['sum', 'mean']}).my_flatten_cols()
+        df_grp_new.columns = new_cols
+        df = df.merge(df_grp_new, how='left')
         return df
 
-    def group_cumsum_feats(
-        self,
-        df,
-        group_cols,
-        cumsum_cols,
-        sort_col,
-        ):
-        df_temp = df.sort_values(sort_col).groupby(group_cols,
-                sort=False).sum().groupby(level=[0])[cumsum_cols].cumsum().reset_index().my_flatten_cols()
+    def group_cumsum_feats(self, df, group_cols, cumsum_cols, sort_col):
+        df_temp = (df.
+                   sort_values(sort_col).
+                   groupby(group_cols, sort=False).
+                   sum().
+                   groupby(level=[0])[cumsum_cols].
+                   cumsum().
+                   reset_index().
+                   my_flatten_cols())
         group_cols.extend(list(['cumsum_' + s for s in cumsum_cols]))
         df_temp.columns = group_cols
         df = df.merge(df_temp, how='left')
         return df
 
-    def group_cummean_feats(
-        self,
-        df,
-        group_cols,
-        cummean_col,
-        sort_col,
-        ):
+    def group_cummean_feats(self, df, group_cols, cummean_col, sort_col):
         for i in group_cols:
             df.sort_values([i, sort_col], ascending=[True, True], inplace=True)
             df.reset_index(drop=True, inplace=True)
@@ -150,20 +141,7 @@ class feat_eng(object):
         return df
 
     # below function to be tweaked. incorporate cummax/cummin version
-    def group_topn_feats(
-        self,
-        df,
-        group_cols,
-        sort_col,
-        subset_cols,
-        new_cols,
-        npwhere_col,
-        npwhere_list,
-        which,
-        flag_col,
-        n=1,
-        ):
-
+    def group_topn_feats(self, df, group_cols, sort_col, subset_cols, new_cols, npwhere_col, npwhere_list, which, flag_col, n=1):
         # which = ['top', 'bottom']
         df[sort_col] = df[sort_col].astype(float)
         if which == 'top':
@@ -171,11 +149,9 @@ class feat_eng(object):
             df_temp = df.groupby(group_cols)[sort_col].nlargest(n)
         elif which == 'bottom':
             df_temp = df.groupby(group_cols)[sort_col].nsmallest(n)
-        df_temp = \
-            df[subset_cols].loc[df_temp.index.get_level_values(1)].reset_index(drop=True)
+        df_temp = df[subset_cols].loc[df_temp.index.get_level_values(1)].reset_index(drop=True)
         df_temp.columns = new_cols
-        df_temp[flag_col] = \
-            np.where(df_temp[npwhere_col].isin(npwhere_list), 1, 0)
+        df_temp[flag_col] = np.where(df_temp[npwhere_col].isin(npwhere_list), 1, 0)
         df_temp.drop(npwhere_col, inplace=True, axis=1)
         df = df.merge(df_temp, how='left')
         return df
@@ -186,39 +162,20 @@ class feat_eng(object):
             df[i] = df[i].astype(str)
             df[i] = df[i].str.replace(' +', ' ', regex=True)
             df[i] = df[i].str.split(' ').str[0].astype(str)
-            df[i] = df[i].str.replace('[^\w\s]', '_', regex=True)
-            df[i + '_year'] = df[i].str.split('_'
-                    ).str[2].astype(str).apply(lambda s: ('20'
-                    + s if len(s) == 2 else s))
+            df[i] = df[i].str.replace('[^\w\s]+', '_', regex=True)
+            df[i + '_year'] = df[i].str.split('_').str[2].astype(str).apply(lambda s: ('20' + s if len(s) == 2 else s))
             df = df.loc[df[i + '_year'] != '0000']
-            df[i + '_month'] = df[i].astype(str).str.split('_'
-                    ).str[0].astype(str).apply(lambda s: ('0'
-                    + s if len(s) == 1 else s))
-            df[i + '_day'] = df[i].astype(str).str.split('_'
-                    ).str[1].astype(float)
-            df[i + '_month'] = np.where(df[i + '_year'
-                    ].astype(float).isin([99, 9999, 2099]), 12, df[i
-                    + '_month'])
-            df[i + '_day'] = np.where(df[i + '_year'
-                    ].astype(float).isin([99, 9999, 2099]), 31, df[i
-                    + '_day'])
-            df[i + '_year'] = np.where(df[i + '_year'
-                    ].astype(float).isin([99, 9999, 2099]), 2019, df[i
-                    + '_year'])
-            df[i + '_yearmonth'] = df[i + '_year'].map(str) + df[i
-                    + '_month'].astype(str)
+            df[i + '_month'] = df[i].astype(str).str.split('_').str[0].astype(str).apply(lambda s: ('0' + s if len(s) == 1 else s))
+            df[i + '_day'] = df[i].astype(str).str.split('_').str[1].astype(float)
+            df[i + '_month'] = np.where(df[i + '_year'].astype(float).isin([99, 9999, 2099]), 12, df[i + '_month'])
+            df[i + '_day'] = np.where(df[i + '_year'].astype(float).isin([99, 9999, 2099]), 31, df[i + '_day'])
+            df[i + '_year'] = np.where(df[i + '_year'].astype(float).isin([99, 9999, 2099]), 2019, df[i+ '_year'])
+            df[i + '_yearmonth'] = df[i + '_year'].map(str) + df[i+ '_month'].astype(str)
             df[i + '_year'] = df[i + '_year'].astype(float)
             df[i + '_month'] = df[i + '_month'].astype(float)
         return df
 
-    def groupby_count(
-        self,
-        df,
-        grp1_col,
-        grp2_cols,
-        count_col,
-        level_two='no',
-        ):
+    def groupby_count(self, df, grp1_col, grp2_cols, count_col, level_two='no'):
         for i in grp2_cols:
             col_name = str('count_' + count_col)
             if level_two=='yes':
@@ -230,14 +187,7 @@ class feat_eng(object):
             df = df.merge(df2, how='left')
         return df
 
-    def groupby_compare(
-        self,
-        df,
-        grp_cols,
-        grp_fixed_cols,
-        transform_col,
-        new_colname,
-        ):
+    def groupby_compare(self, df, grp_cols, grp_fixed_cols, transform_col, new_colname):
         for i in grp_cols:
             all_grp_cols = grp_fixed_cols.copy()
             if i is not None:
@@ -245,27 +195,15 @@ class feat_eng(object):
             df1 = df.groupby(all_grp_cols)[transform_col].transform('size').sub(1)
             df2 = df.groupby(all_grp_cols)[transform_col].transform('sum').sub(df[transform_col])
             if i is not None:
-                new_colname = str(new_colname + transform_col
-                                  + '_atlevel_' + i)
+                new_colname = str(new_colname + transform_col + '_atlevel_' + i)
             if i is None:
-                new_colname = str(new_colname + transform_col
-                                  + 'atlevel_', '...user_insert_here...')
+                new_colname = str(new_colname + transform_col + 'atlevel_', '...user_insert_here...')
             df[new_colname] = df2 / df1
             df[new_colname] = df[transform_col] / df[new_colname]
         return df
 
-    def fillna_df(
-        self,
-        df,
-        fill_cols,
-        mode,
-        grp_col=None,
-        abs_value=None,
-        ref_value_col=None,
-        ref_value_col_frac=None,
-        ):
+    def fillna_df(self, df, fill_cols, mode, grp_col=None, abs_value=None, ref_value_col=None, ref_value_col_frac=None):
         """ mode = ['simple_abs', 'simple_ref', 'adv_fill'] """
-
         for i in fill_cols:
             if mode == 'simple_abs':
                 df[i] = df[i].astype(float)
@@ -273,19 +211,24 @@ class feat_eng(object):
             elif mode == 'simple_ref':
                 df[i].fillna(value=df[ref_value_col], inplace=True)
             elif mode == 'adv_fill':
-                df[i] = df.groupby(grp_col)[i].transform(lambda x: \
-                        x.ffill())
+                df[i] = df.groupby(grp_col)[i].transform(lambda x: x.ffill())
                 df['flagna'] = df[i].isnull()
-                df[i] = df.groupby(grp_col)[i].transform(lambda x: \
-                        x.bfill())
+                df[i] = df.groupby(grp_col)[i].transform(lambda x: x.bfill())
                 if ref_value_col is not None:
-                    df[i] = np.where(df['flagna'] == 1, df[i]
-                            - ref_value_col_frac * df[i], df[i])
+                    df[i] = np.where(df['flagna'] == 1, df[i] - ref_value_col_frac * df[i], df[i])
                 if abs_value is not None:
-                    df[i] = np.where(df['flagna'] == 1, df[i]
-                            - abs_value, df[i])
+                    df[i] = np.where(df['flagna'] == 1, df[i] - abs_value, df[i])
                 df.drop('flagna', axis=1, inplace=True)
                 df.reset_index(inplace=True, drop=True)
         return df
+    
+    def force_numeric(self, df, cols=None):
+        if cols is None:
+            allcols_exceptdates = df.select_dtypes(exclude=['datetime64']).columns.values
+            df[allcols_exceptdates] = df[allcols_exceptdates].apply(pd.to_numeric, errors='coerce')
+        else:
+            df[cols] = df[cols].apply(pd.to_numeric, errors='coerce')
+        return df
+    
     
 #####################################################################################

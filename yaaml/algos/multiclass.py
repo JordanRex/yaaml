@@ -152,20 +152,3 @@ class opr_model():
     
     
 oprmod = opr_model(train, valid, ytrain, yvalid)
-
-
-## importance
-importance = oprmod.ensmod.feature_importances_
-importance = pd.DataFrame(importance, index=xxx.columns, 
-                          columns=["Importance"])
-importance.sort_values(by='Importance', ascending=False, inplace=True)
-
-importance["Std"] = np.std([tree.feature_importances_
-                            for tree in oprmod.ensmod.estimators_], axis=0)
-x = range(importance.shape[0])
-y = importance.ix[:, 0]
-yerr = importance.ix[:, 1]
-plt.bar(x, y, yerr=yerr, align="center")
-plt.savefig('importance.png')
-plt.show()
-
