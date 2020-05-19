@@ -4,7 +4,7 @@ Yet - Another - Auto - ML
 *Personal auto ml repository. Nowhere near complete. but has a few complete major components
 Will add more details later*
 
-Install using __pip install -i https://test.pypi.org/simple/ yaaml__ for now until i push to PyPi
+Install using [pip install -i https://test.pypi.org/simple/ yaaml](url) for now until i push to PyPi
 
 ___NEWS___
 1. version 0.0.1
