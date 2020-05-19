@@ -60,15 +60,9 @@ class xgboost_model():
         """ this class initializes some functions used in the xgboost pipeline """
     
     # define your custom evaluation metric here
-    # currently defined: recall, precision, f1, roc-auc, weighted of recall/precision metrics
     def f1_score(preds, dtrain):
         labels = dtrain.get_label()
-        #y_preds = [1 if y >= 0.5 else 0 for y in preds] # binaryzing your output
-        #rscore = sklearn.metrics.recall_score(y_pred=y_preds, y_true=labels)
-        #pscore = sklearn.metrics.precision_score(y_pred=y_preds, y_true=labels)
-        #score = sklearn.metrics.f1_score(y_pred=y_preds, y_true=labels)
         score = sklearn.metrics.roc_auc_score(y_score=preds, y_true=labels)
-        #score = (4*rscore + pscore)/5
         return 'score', score
     
     # function to be minimized and sent to the optimize function of hyperopt
@@ -152,15 +146,8 @@ class xgboost_model():
     def xgb_cv(X_train, y_train, best_params):
         model = xgb.XGBClassifier(**best, silent=True)
         xgb_cv_scores = sklearn.model_selection.cross_val_predict(model, X_train, y_train, cv=5)
-        print('recall: ', sklearn.metrics.recall_score(y_pred=xgb_cv_scores, y_true=y_train))
-        print('precision: ', sklearn.metrics.precision_score(y_pred=xgb_cv_scores, y_true=y_train))
-        print('f1: ', sklearn.metrics.f1_score(y_pred=xgb_cv_scores, y_true=y_train))
         print('accuracy: ', sklearn.metrics.accuracy_score(y_pred=xgb_cv_scores, y_true=y_train))
        ###########################################################################################################################################
-
-## xgboost execute below lines to get the best params and results from the xgboost model
-""" calling the model creation functions to return the trials (results object) and the best parameters.
-the best parameters are used to train the model and the predicted results are returned with the xgboost_model.xgb_predict call """
 
 # return the trials and best parameters
 trials, best, num_rounds = xgboost_model.optimize(X_train=X_train, y_train=y_train)
@@ -176,11 +163,6 @@ xgboost_model.xgb_cv(X_train, y_train, best)
 # print results with confusion matrix for the validation set
 xgb_pred, xgb_predict, tn, fp, fn, tp = xgboost_model.xgb_predict(X_test=X_valid, model=model, y_test=y_valid, mode='validate',
                                                                   trials=trials, threshold = 0.04)
-
-print('true negatives: ', tn)
-print('false positives: ', fp)
-print('false negatives: ', fn)
-print('true positives: ', tp)
 
 p, r, thresholds = metrics.precision_recall_curve(y_true=y_valid, probas_pred=xgb_pred)
 
@@ -198,14 +180,9 @@ plot_precision_recall_vs_threshold(p, r, thresholds)
 # execute below snippet to save model for later use (a model is usually just a few mb so saving is good as backupif hard to recreate)
 import pickle
 pickle.dump(model, open("xgb_june17.pickle.dat", "wb"))
-#loaded_model = pickle.load(open("xgb_june17.pickle.dat", "rb"))
 
 ## important features from the best model above
 xgb.plot_importance(booster=model, max_num_features=25, show_values=False)
-
-###########################################################################################################################################
-###########################################################################################################################################
-
 
 ###########################################################################################################################################
 ###########################################################################################################################################
@@ -222,10 +199,7 @@ class lightgbm_model():
 
         rscore = sklearn.metrics.recall_score(y_pred=y_preds, y_true=labels)
         pscore = sklearn.metrics.precision_score(y_pred=y_preds, y_true=labels)
-        #score = sklearn.metrics.f1_score(y_pred=y_preds, y_true=labels)
-        #score = sklearn.metrics.roc_auc_score(y_score=y_preds, y_true=labels)
         score = (4*rscore + pscore)/5
-        
         return 'score', score, True
     
     def lgbm_score(params):        
@@ -320,9 +294,6 @@ class lightgbm_model():
     def lgbm_cv(X_train, y_train, best):
         model = lgb.LGBMClassifier(**best, silent=True)
         lgb_cv_scores = sklearn.model_selection.cross_val_predict(model, X_train, y_train, cv=5)
-        print('recall: ', sklearn.metrics.recall_score(y_pred=lgb_cv_scores, y_true=y_train))
-        print('precision: ', sklearn.metrics.precision_score(y_pred=lgb_cv_scores, y_true=y_train))
-        print('f1: ', sklearn.metrics.f1_score(y_pred=lgb_cv_scores, y_true=y_train))
         print('accuracy: ', sklearn.metrics.accuracy_score(y_pred=lgb_cv_scores, y_true=y_train))
         
 ###########################################################################################################################################
@@ -342,19 +313,7 @@ lightgbm_model.lgbm_cv(X_train, y_train, best)
 lgb_pred, lgb_predict, tn, fp, fn, tp = lightgbm_model.lgbm_predict(X_test=X_valid, model=model, y_test=y_valid, mode='validate')
 p, r, thresholds = metrics.precision_recall_curve(y_true=y_valid, probas_pred=lgb_pred)
 
-def plot_precision_recall_vs_threshold(precisions, recalls, thresholds):
-    plt.figure(figsize=(8, 8))
-    plt.title("Precision and Recall Scores as a function of the decision threshold")
-    plt.plot(thresholds, precisions[:-1], "b--", label="Precision")
-    plt.plot(thresholds, recalls[:-1], "g-", label="Recall")
-    plt.ylabel("Score")
-    plt.xlabel("Decision Threshold")
-    plt.legend(loc='best')
 plot_precision_recall_vs_threshold(p, r, thresholds)
-
-###########################################################################################################################################
-###########################################################################################################################################
-
 
 ###########################################################################################################################################
 ###########################################################################################################################################

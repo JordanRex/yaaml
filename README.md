@@ -11,4 +11,8 @@ ___NEWS___
 	- first commit. incomplete codes pushed
 2. ...
 3. version 0.0.4
-	- most of remaining individual files pushed. Need to first modularize and extend all the other methods. Estimated time until next stable push - 1week
+	- most of remaining individual files pushed. Need to first modularize and extend all the other methods
+4. version 0.0.5
+    - focus changed to helper functions more than the automl. first major commit after a year
+5. version 0.0.6
+    - tentative plan to push first stable working version
