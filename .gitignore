@@ -1,5 +1,5 @@
 setup.py
-yaaml_env/
+env/
 yaaml_build_method.txt
 
 # Byte-compiled / optimized / DLL files
