@@ -1,8 +1,0 @@
-yaaml build method to push to Pypi
-
-1. open cmd in the setup.py directory
-2. type = python setup.py sdist bdist_wheel
-3. get the generated wheel file and do local pip installaion to confirm everything is fine
-4. type = twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-5. un, pw = jordanrex, (the usual)
-6. 
