@@ -1,4 +1,8 @@
 # yaaml __init__.py
+__version__ = '0.0.5'
+__author__ = 'varunrajan'
+__name__ = 'yaaml'
+__org__ = '...'
 
 # importing packages
 import os as os
@@ -43,8 +47,3 @@ from sampling import sampler
 
 # call the main script
 import main
-
-__version__ = '0.0.5'
-__author__ = 'varunrajan'
-__name__ = 'yaaml'
-__org__ = '...'

@@ -40,10 +40,10 @@ class DataFrameImputer(TransformerMixin):
         which_method = ['KNN', 'NNM', 'IterativeImputer']
         """
         print(which_method, ' based missing value imputation is happening ...', '\n')
-        
+
         if which_method == 'NNM': X = NuclearNormMinimization().complete(X) # NNM method
         if which_method == 'KNN': X = KNN(k=5, verbose=False).complete(X) # KNN method
-        
+
         if which_method == 'IterativeImputer':
             imputer = IterativeImputer()
             imputer.fit(X.values)

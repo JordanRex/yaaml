@@ -12,18 +12,18 @@ class Main():
 
     def __init__(self,
                  train, valid,
-                 maxevals=10, nfolds=3, randomseed=123, 
+                 maxevals=10, nfolds=3, randomseed=123,
                  response_variable='response', idcol='id',
                  mode='classify', #mode = ['classify', 'regress']
                  ##user to supply -> encoding, missing value treatment, sampling
-                 encoding='oe', misstreatment='simple', 
+                 encoding='oe', misstreatment='simple',
                  cols_to_remove=None):
         """ initialize the main variables """
         # define the global variables to be used later
         self.MAX_EVALS = maxevals  # number of iterations/parameter sets created towards tuning
         self.N_FOLDS = nfolds  # number of cv folds
         self.randomseed = randomseed  # the value for the random state used at various points in the pipeline
-        
+
         self.train = train
         self.valid = valid
         self.idcol = idcol
@@ -35,7 +35,7 @@ class Main():
         valid = self.valid
         idcol = self.idcol
         response = self.response
-        
+
         # creating the datetime features from date columns (works only for cols with date in header)
         print('Datetime features are being created for the columns (which have "date" in their column name) \n')
         train, valid = helper_funcs.datetime_feats(train, valid)
@@ -78,15 +78,15 @@ class Main():
         # drop the response
         xtrain = xtrain.drop([response], axis=1)
         xvalid = xvalid.drop([response], axis=1)
-        
+
         # save the required frames as self attributes
         self.xtrain = xtrain
         self.xvalid = xvalid
         self.ytrain = ytrain
         self.yvalid = yvalid
-        
+
         start_time = time.time()
-        
+
         #######################################################################################################
         # ENCODING
         #######################################################################################################
@@ -126,7 +126,7 @@ class Main():
         # store all feature names
         feat_names = train.columns.values
         feat_names2 = valid.columns.values
-        
+
         if params['miss_treatment'] == 'simple':
             miss_enc = DataFrameImputer()
             miss_enc.fit(X=train)
@@ -151,6 +151,7 @@ class Main():
         print(y_valid.shape)
         print(collections.Counter(y_train))
         print(collections.Counter(y_valid))
+        print('STATUS REPORT END \n')
         #######################################################################################################
         #######################################################################################################
         # FEATURE ENGINEERING

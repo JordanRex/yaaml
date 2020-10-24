@@ -1,3 +1,9 @@
+# misc functions
+
+###############################################################################################################################
+## EDA
+###############################################################################################################################
+
 import math
 import numpy as np
 import pandas as pd
@@ -196,3 +202,103 @@ def associations(dataset, nominal_columns=None, mark_columns=False, theil_u=Fals
         plt.show()
     if return_results:
         return corr
+
+
+###############################################################################################################################
+## ENCODING
+###############################################################################################################################
+
+"""
+below class was taken from url=https://www.kaggle.com/superant/oh-my-cat
+Thermometer encoding (believed to be working really good for GANs)
+cannot handle unseen values in test. so use for situations where all levels for a cat variable has atleast 1 sample in train
+"""
+
+from sklearn.base import TransformerMixin
+from itertools import repeat
+import scipy
+
+class ThermometerEncoder(TransformerMixin):
+    """
+    Assumes all values are known at fit
+    """
+    def __init__(self, sort_key=None):
+        self.sort_key = sort_key
+        self.value_map_ = None
+
+    def fit(self, X, y=None):
+        self.value_map_ = {val: i for i, val in enumerate(sorted(X.unique(), key=self.sort_key))}
+        return self
+
+    def transform(self, X, y=None):
+        values = X.map(self.value_map_)
+
+        possible_values = sorted(self.value_map_.values())
+
+        idx1 = []
+        idx2 = []
+
+        all_indices = np.arange(len(X))
+
+        for idx, val in enumerate(possible_values[:-1]):
+            new_idxs = all_indices[values > val]
+            idx1.extend(new_idxs)
+            idx2.extend(repeat(idx, len(new_idxs)))
+
+        result = scipy.sparse.coo_matrix(([1] * len(idx1), (idx1, idx2)), shape=(len(X), len(possible_values)), dtype="int8")
+
+        return result
+
+###############################################################################################################################
+## MISC
+###############################################################################################################################
+
+# global function to flatten columns after a grouped operation and aggregation
+# outside all classes since it is added as an attribute to pandas DataFrames
+def __my_flatten_cols(self, how="_".join, reset_index=True):
+    how = (lambda iter: list(iter)[-1]) if how == "last" else how
+    self.columns = [how(filter(None, map(str, levels))) for levels in self.columns.values] \
+    if isinstance(self.columns, pd.MultiIndex) else self.columns
+    return self.reset_index(drop=True) if reset_index else self
+pd.DataFrame.my_flatten_cols = __my_flatten_cols
+
+
+# find and append multiple dataframes of the type specified in string
+def append_datasets(cols_to_remove, string=['train', 'valid']):
+    # pass either train or valid as str argument
+    temp_files = [name for name in os.listdir('../input/') if name.startswith(string)]
+    temp_dict = {}
+    for i in temp_files:
+        df_name = re.sub(string=i, pattern='.csv', repl='')
+        temp_dict[df_name] = pd.read_csv(str('../input/' + str(i)), na_values=['No Data', ' ', 'UNKNOWN', '', 'NA', 'nan', 'none'])
+        temp_dict[df_name].columns = map(str.lower, temp_dict[df_name].columns)
+        temp_dict[df_name].drop(cols_to_remove, axis=1, inplace=True)
+        chars_to_remove = [' ', '.', '(', ')', '__', '-']
+        for j in chars_to_remove:
+            temp_dict[df_name].columns = temp_dict[df_name].columns.str.strip().str.lower().str.replace(j, '_')
+    temp_list = [v for k, v in temp_dict.items()]
+    if len(temp_list) > 1:
+        temp = pd.concat(temp_list, axis=0, sort=True, ignore_index=True)
+    else:
+        temp = temp_list[0]
+    return temp
+
+
+def read_file(path, format='csv', sheet_name='Sheet 1', skiprows=0, sep='|'):
+    if format=='csv':
+        try:
+            x=pd.read_csv(path, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'], encoding='utf-8', low_memory=False)
+        except:
+            x=pd.read_csv(path, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'], encoding='latin-1', low_memory=False)
+            pass
+    elif format=='txt':
+        x=pd.read_table(file_path, sep=sep, skiprows=skiprows, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'])
+    elif format=='xlsx':
+        x=pd.read_excel(file_path, na_values=['No Data', ' ', 'UNKNOWN', '', 'Not Rated', 'Not Applicable'], sheet_name=sheet_name)
+    else:
+        raise ValueError("format not supported")
+
+    x.columns = x.columns.str.strip().lower().replace(r'[^\w\s]+', '_', regex=True)
+    x.drop_duplicates(inplace=True)
+    print(x.shape)
+    return x

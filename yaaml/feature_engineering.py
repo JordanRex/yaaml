@@ -20,37 +20,25 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import sklearn.random_projection as rp
 import pandas as pd
 
-# global function to flatten columns after a grouped operation and aggregation
-# outside all classes since it is added as an attribute to pandas DataFrames
-def __my_flatten_cols(self, how="_".join, reset_index=True):
-    how = (lambda iter: list(iter)[-1]) if how == "last" else how
-    self.columns = [how(filter(None, map(str, levels))) for levels in self.columns.values] \
-    if isinstance(self.columns, pd.MultiIndex) else self.columns
-    return self.reset_index(drop=True) if reset_index else self
-pd.DataFrame.my_flatten_cols = __my_flatten_cols
-
 
 class feature_engineering_class():
 
-    def __init__(self):
-        """ this module contains several functions for creating new features. find below a brief description of each """
+    def __init__(self, train, valid, scaler_method='ss', decomposition_methods=['PCA'], ):
+        self.t = train
+        self.v = valid
+        self.scm = scaler_method
+        self.dcm = decomposition_methods
 
-    def scalers(self, train, valid, which_method):
-        if which_method == 'ss':
-            sc = StandardScaler()
-            sc.fit(train)
-            train_new = pd.DataFrame(sc.transform(train), columns=train.columns.values)
-            valid_new = pd.DataFrame(sc.transform(valid), columns=valid.columns.values)
-            return train_new, valid_new # scale all variables to zero mean and unit variance, required for PCA and related
-        if which_method == 'mm': # scales to range (0,1) by default
-            mm = MinMaxScaler()
-            mm.fit(train)
-            train_new = pd.DataFrame(mm.transform(train), columns=train.columns.values)
-            valid_new = pd.DataFrame(mm.transform(valid), columns=valid.columns.values)
-            return train_new, valid_new # use this method to iterate
+    def scalers(self):
+        """
+        Standard scaler = 'ss'
+        MinMax scaler = 'mm'
+        """
+        sc = StandardScaler() if self.scm == 'ss' else MinMaxScaler()
+        sc.fit(self.t)
+        return pd.DataFrame(sc.transform(self.t), columns=self.t.columns.values), pd.DataFrame(sc.transform(self.v), columns=self.v.columns.values)
 
-    def decomp_various(self, train, valid, n, which_method):
-        global decomp_dfs
+    def decomp_various(self, n):
         decomp_dfs = {}
         decomp_methods = ['PCA', 'FastICA', 'TruncatedSVD', 'GaussianRandomProjection', 'SparseRandomProjection']
 
@@ -66,7 +54,7 @@ class feature_engineering_class():
                 decomp_obj = decomp_obj(n_components=n, eps=0.3)
 
             # perform the multiple decomposition techniques
-            train, valid = feat_eng.scalers(self, train, valid, which_method)
+            t, v = self.scalers()
 
             decomp_obj.fit(train)
             decomp_train = pd.DataFrame(decomp_obj.transform(train))
@@ -221,7 +209,7 @@ class feature_engineering_class():
                 df.drop('flagna', axis=1, inplace=True)
                 df.reset_index(inplace=True, drop=True)
         return df
-    
+
     def force_numeric(self, df, cols=None):
         if cols is None:
             allcols_exceptdates = df.select_dtypes(exclude=['datetime64']).columns.values
@@ -229,6 +217,3 @@ class feature_engineering_class():
         else:
             df[cols] = df[cols].apply(pd.to_numeric, errors='coerce')
         return df
-    
-    
-#####################################################################################
