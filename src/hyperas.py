@@ -11,31 +11,31 @@ from tensorflow.keras.callbacks import EarlyStopping
 
 import pickle
 
-def data(train, valid, ytrain, yvalid):
-    
-    X = np.array(train)
-    XV = np.array(valid)
-    Y = to_categorical(ytrain)
-    YV = to_categorical(yvalid)
-    
+def save_data(train, valid, ytrain, yvalid):
+    x = np.array(train)
+    X = np.array(valid)
+    y = to_categorical(ytrain)
+    Y = to_categorical(yvalid)
     # save backup
     nnbp = open('./backup.pkl','wb')
+    pickle.dump(x, nnbp)
     pickle.dump(X, nnbp)
+    pickle.dump(y, nnbp)
     pickle.dump(Y, nnbp)
-    pickle.dump(XV, nnbp)
-    pickle.dump(YV, nnbp)
     nnbp.close()
-    
+    return None
+
+def data():
     # load backup
     nnbp = open('./backup.pkl', 'rb')
+    x = pickle.load(nnbp)
     X = pickle.load(nnbp)
+    y = pickle.load(nnbp)
     Y = pickle.load(nnbp)
-    XV = pickle.load(nnbp)
-    YV = pickle.load(nnbp)
     nnbp.close()
-    return X, Y, XV, YV
+    return x, X, y, Y
 
-def create_model(X, Y, XV, YV):
+def create_model(x, X, y, Y):
     '''
     Create Keras model with double curly brackets dropped-in as needed.
     Return value has to be a valid python dictionary with two customary keys:
@@ -44,7 +44,7 @@ def create_model(X, Y, XV, YV):
     The last one is optional, though recommended, namely:
         - model: specify the model just created so that we can later use it again.
     '''
-    input_dim = X.shape[1]
+    input_dim = x.shape[1]
 
     model = Sequential()
     model.add(Dense(input_dim, input_dim = input_dim , activation={{choice(['relu', 'sigmoid', 'tanh', 'elu'])}}))
@@ -59,10 +59,10 @@ def create_model(X, Y, XV, YV):
     model.add(Dropout({{uniform(0, 0.7)}}))
     model.add(Dense(9, activation={{choice(['softmax', 'sigmoid'])}}))
 
-    model.compile(loss='categorical_crossentropy', optimizer = {{choice(['rmsprop', 'adam', 'sgd', 'nadam', 'adadelta'])}}, 
+    model.compile(loss='categorical_crossentropy', optimizer = {{choice(['rmsprop', 'adam', 'sgd', 'nadam', 'adadelta'])}},
                   metrics=['accuracy'])
-    model.fit(X, Y, batch_size={{choice([10, 20])}}, epochs=5, verbose=2, validation_data=(XV, YV), shuffle=True, callbacks=[EarlyStopping(monitor='val_loss', patience=7, min_delta=0.0001)])
-    score, acc = model.evaluate(XV, YV, verbose=1)
+    model.fit(x, y, batch_size={{choice([10, 20])}}, epochs=5, verbose=2, validation_data=(X, Y), shuffle=True, callbacks=[EarlyStopping(monitor='val_loss', patience=7, min_delta=0.0001)])
+    score, acc = model.evaluate(X, Y, verbose=1)
     print('Test accuracy:', acc)
     return {'loss': -acc, 'status': STATUS_OK, 'model': model}
 
@@ -74,18 +74,15 @@ if __name__ == '__main__':
                                                  trials=Trials(),
                                                  eval_space=True,
                                                  return_space=True)
-    X, Y, XV, YV = data()
+    x, X, y, Y = data()
     print("Evalutation of best performing model:")
-    print(best_model.evaluate(XV, YV))
+    print(best_model.evaluate(X, Y))
     print("Best performing model chosen hyper-parameters:")
     print(best_run)
     best_model.save('model.h5')
 
-    
-# model = load_model('model.h5')
-# print(best_run)
-# model.fit(X,Y,batch_size=10, epochs=10, verbose=1, shuffle=True, validation_data=(XV,YV))
-# model.evaluate(XV,YV)
-# nn_pred = model.predict_classes(x=XV)
-# skm.accuracy_score(y_pred=nn_pred, y_true=yvalid)
-# skm.confusion_matrix(y_pred=nn_pred, y_true=yvalid)
+    best_model.fit(x,y,batch_size=10, epochs=10, verbose=1, shuffle=True, validation_data=(X,Y))
+    model.evaluate(X,Y)
+    nn_pred = model.predict_classes(x=X)
+    skm.accuracy_score(y_pred=nn_pred, y_true=Y)
+    skm.confusion_matrix(y_pred=nn_pred, y_true=Y)

@@ -21,7 +21,7 @@ from collections import Counter
 def sampler(X_train, y_train, which='smote_enn', frac=0.75):
     """ which = ['adasyn', smote_tomek', 'smote_enn', 'enn', 'renn', 'allknn'] """
     feat_names = X_train.columns.values
-    print('Sampling is being done..\n')
+    print('Sampling is being done ...\n')
 
     ### OVERSAMPLING (ADASYN) ###
     if which=='adasyn':
@@ -52,5 +52,5 @@ def sampler(X_train, y_train, which='smote_enn', frac=0.75):
         X_train, y_train = allknn.fit_sample(X_train, y_train)
 
     X_train = pd.DataFrame(data=X_train, columns=feat_names)
-    print(X_train.shape, y_train.shape, Counter(y_train))
+    print('Sampling completed ...\n')
     return X_train, y_train
