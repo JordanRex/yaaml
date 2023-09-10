@@ -14,5 +14,5 @@ ___NEWS___
 	- most of remaining individual files pushed. Need to first modularize and extend all the other methods
 4. version 0.0.5
     - focus changed to helper functions more than the automl. first major commit after a year
-5. version 0.0.6
-    - tentative plan to push first stable working version
+5. version 0.1.0
+    - first stable working version
