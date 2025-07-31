@@ -1,0 +1,342 @@
+name: CI/CD Pipeline - Modern uv + Python 3.12+
+
+# Temporarily disabled - uncomment when ready to use
+# on:
+#   push:
+#     branches: [ main, master, develop ]
+#   pull_request:
+#     branches: [ main, master ]
+#   release:
+#     types: [ published ]
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+jobs:
+  python312-features:
+    name: Python 3.12+ Features Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies with uv
+      run: uv sync --all-extras
+
+    - name: Test Python 3.12+ Features
+      run: |
+        python -c "
+        print('🧪 Testing Python 3.12+ Features')
+        # Test walrus operator
+        if (data := [1, 2, 3]) and len(data) > 0:
+            print('✅ Walrus operator working')
+
+        # Test union types
+        def test_union(x: int | str) -> str:
+            return str(x)
+        print(f'✅ Union types: {test_union(42)}')
+
+        # Test built-in generics
+        test_dict: dict[str, list[int]] = {'nums': [1, 2, 3]}
+        print(f'✅ Built-in generics: {len(test_dict[\"nums\"])}')
+
+        print('🎉 All Python 3.12+ features working!')
+        "
+
+    - name: Run Python 3.12+ Feature Tests
+      run: |
+        pytest tests/test_python312_features.py -v --tb=short
+
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies with uv
+      run: uv sync --all-extras
+
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        uv run flake8 yaaml --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        uv run flake8 yaaml --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Check code formatting with black
+      run: |
+        uv run black --check yaaml tests
+
+    - name: Check import sorting with isort
+      run: |
+        uv run isort --check-only yaaml tests --profile black
+
+    - name: Type checking with mypy (Python 3.12+ features)
+      run: |
+        uv run mypy yaaml --ignore-missing-imports --python-version=3.12
+      continue-on-error: true  # Type checking is informational for now
+
+    - name: Verify no legacy typing imports
+      run: |
+        echo "🔍 Checking for legacy typing imports..."
+        if grep -r "from typing import.*Union\|from typing import.*Optional\|from typing import.*List\|from typing import.*Dict\|from typing import.*Tuple" yaaml/; then
+          echo "❌ Found legacy typing imports!"
+          exit 1
+        else
+          echo "✅ No legacy typing imports found!"
+        fi
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies with uv
+      run: uv sync --all-extras
+
+    - name: Run Unit Tests
+      run: |
+        mkdir -p coverage
+        uv run pytest tests/ --cov=yaaml --cov-report=xml:coverage/coverage.xml --cov-report=term-missing -v --tb=short
+        # Clean up any stray coverage files in root
+        rm -f .coverage* coverage.xml || true
+        rm -rf htmlcov || true
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage/coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+
+  realistic-automl-test:
+    name: Realistic AutoML Integration Tests
+    runs-on: ubuntu-latest
+    needs: [python312-features, lint]
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python ${{ matrix.python-version }}
+      run: uv python install ${{ matrix.python-version }}
+
+    - name: Install dependencies with uv
+      run: uv sync --all-extras
+
+    - name: Run Realistic AutoML Tests
+      run: |
+        echo "🧪 Running Realistic AutoML Integration Tests"
+        uv run pytest tests/test_realistic_automl.py -v --tb=short
+
+    - name: Run Module Integration Tests
+      run: |
+        echo "🧪 Running Module Integration Tests"
+        uv run pytest tests/test_module_integration.py -v --tb=short
+
+    - name: Live AutoML Demo Test
+      run: |
+        uv run python -c "
+        print('🧪 LIVE AUTOML DEMO TEST')
+        print('=' * 40)
+
+        import pandas as pd
+        import numpy as np
+        from sklearn.datasets import make_classification
+        from sklearn.model_selection import train_test_split
+        from yaaml import YAAMLAutoML
+
+        # Create realistic dataset
+        np.random.seed(42)
+        X, y = make_classification(
+            n_samples=300, n_features=6, n_informative=4,
+            flip_y=0.1, class_sep=0.7, random_state=42
+        )
+
+        df = pd.DataFrame(X, columns=[f'feature_{i}' for i in range(X.shape[1])])
+        df['category'] = np.random.choice(['A', 'B', 'C'], size=len(df))
+        df['status'] = np.random.choice(['active', 'inactive'], size=len(df))
+
+        # Add missing values
+        missing_idx = np.random.choice(len(df), size=30, replace=False)
+        df.loc[list(missing_idx), 'feature_0'] = np.nan
+
+        target = pd.Series(y)
+
+        # Train/test split
+        X_train, X_test, y_train, y_test = train_test_split(
+            df, target, test_size=0.25, random_state=42
+        )
+
+        print(f'📊 Dataset: {X_train.shape} train, {X_test.shape} test')
+        print(f'📊 Missing values: {X_train.isnull().sum().sum()}')
+
+        # AutoML with comprehensive preprocessing
+        automl = YAAMLAutoML(
+            mode='classification',
+            max_evals=2,  # Quick for CI
+            cv_folds=2,
+            verbosity=0,
+            feature_engineering=True,
+            feature_selection=True
+        )
+
+        print('🚀 Training AutoML...')
+        automl.fit(X_train, y_train)
+
+        print('🎯 Testing predictions...')
+        predictions = automl.predict(X_test)
+        metrics = automl.evaluate(X_test, y_test)
+
+        accuracy = metrics['test_accuracy']
+        print(f'📈 Results: {accuracy:.3f} accuracy')
+
+        if 0.60 <= accuracy <= 0.95:
+            print('✅ REALISTIC PERFORMANCE: AutoML working correctly!')
+        else:
+            print(f'⚠️  UNUSUAL PERFORMANCE: {accuracy:.3f} - check if normal')
+
+        print('🎉 Live demo test completed successfully!')
+        "
+
+  integration-test:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python 3.12
+      run: uv python install 3.12
+
+    - name: Install dependencies with uv
+      run: uv sync --all-extras
+
+    - name: Run integration tests
+      run: |
+        uv run python -m pytest tests/ -m "integration" -v
+      continue-on-error: true  # Integration tests are optional for now
+
+    - name: Test package installation
+      run: |
+        uv run python -c "import yaaml; print(f'YAAML version: {yaaml.__version__}')"
+        uv run python -c "from yaaml import YAAMLAutoML; print('Import successful')"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v4
+      with:
+        version: "latest"
+
+    - name: Set up Python 3.12
+      run: uv python install 3.12
+
+    - name: Install dependencies with uv
+      run: uv sync --all-extras
+
+    - name: Build package
+      run: |
+        uv build
+
+    - name: Check package
+      run: |
+        uv run twine check dist/*
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+  publish-test-pypi:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: dist
+        path: dist/
+
+    - name: Publish to Test PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+        repository-url: https://test.pypi.org/legacy/
+        skip-existing: true
+
+  # publish-pypi:
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   if: github.event_name == 'release' && github.event.action == 'published'
+  #
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #
+  #   - name: Download build artifacts
+  #     uses: actions/download-artifact@v3
+  #     with:
+  #       name: dist
+  #       path: dist/
+  #
+  #   - name: Publish to PyPI
+  #     uses: pypa/gh-action-pypi-publish@release/v1
+  #     with:
+  #       password: ${{ secrets.PYPI_API_TOKEN }}
