@@ -82,7 +82,7 @@ class TestPython312Features:
 
             return keys, averages
 
-        test_data = {"group_a": [1, 2, 3], "group_b": [4.5, 5.5, 6.5]}
+        test_data: dict[str, list[int | float]] = {"group_a": [1, 2, 3], "group_b": [4.5, 5.5, 6.5]}
 
         keys, averages = complex_function(test_data)
         assert len(keys) == 2

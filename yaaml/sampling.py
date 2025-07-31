@@ -6,6 +6,7 @@ Native implementation of sampling techniques for imbalanced datasets
 from __future__ import annotations
 
 import warnings
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -29,7 +30,7 @@ class NativeSampler:
         self.strategy = strategy
         self.random_state = random_state
         self.class_counts: pd.Series | None = None
-        self.sampling_info: dict[str, float | bool | dict] = {}
+        self.sampling_info: dict[str, float | bool | dict[str, Any]] = {}
 
     def fit_resample(
         self, X: pd.DataFrame, y: pd.Series
@@ -112,7 +113,7 @@ class NativeSampler:
 
             if current_count < max_count:
                 # Oversample this class
-                X_upsampled, y_upsampled = resample(  # type: ignore[misc]
+                X_upsampled, y_upsampled = resample(
                     X_class,
                     y_class,
                     replace=True,
@@ -159,7 +160,7 @@ class NativeSampler:
 
             if current_count > min_count:
                 # Undersample this class
-                X_downsampled, y_downsampled = resample(  # type: ignore[misc]
+                X_downsampled, y_downsampled = resample(
                     X_class,
                     y_class,
                     replace=False,
@@ -207,7 +208,7 @@ class NativeSampler:
             if current_count != target_count:
                 # Resample to target count
                 replace_flag = current_count < target_count
-                X_resampled_class, y_resampled_class = resample(  # type: ignore[misc]
+                X_resampled_class, y_resampled_class = resample(
                     X_class,
                     y_class,
                     replace=replace_flag,
@@ -261,7 +262,7 @@ class NativeSampler:
 
             if current_count < target_min_count:
                 # Oversample this class
-                X_upsampled, y_upsampled = resample(  # type: ignore[misc]
+                X_upsampled, y_upsampled = resample(
                     X_class,
                     y_class,
                     replace=True,
@@ -285,8 +286,8 @@ class NativeSampler:
 
         return X_final, y_final
 
-    def get_sampling_info(self) -> dict:
-        """Get information about the sampling process"""
+    def get_sampling_info(self) -> dict[str, Any]:
+        """Return information about the sampling performed"""
         return self.sampling_info.copy()
 
 
@@ -388,7 +389,7 @@ def apply_sampling(
     return sampler.fit_resample(X, y)
 
 
-def analyze_class_distribution(y: pd.Series | np.ndarray) -> dict:
+def analyze_class_distribution(y: pd.Series | np.ndarray) -> dict[str, Any]:
     """
     Analyze class distribution in target variable
 

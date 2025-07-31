@@ -36,14 +36,14 @@ class NativeAlgorithmBase:
         self.best_score = None
         self.best_model = None
 
-    def _get_scoring_metric(self):
+    def _get_scoring_metric(self) -> str:
         """Get appropriate scoring metric based on task type"""
         if self.task_type == "classification":
             return "roc_auc"
         else:
             return "r2"
 
-    def _validate_and_cast_params(self, params: dict, int_params: list[str]) -> dict:
+    def _validate_and_cast_params(self, params: dict[str, Any], int_params: list[str]) -> dict[str, Any]:
         """Ensure specified parameters are integers"""
         validated_params = params.copy()
         for param in int_params:
@@ -57,7 +57,7 @@ class NativeAlgorithmBase:
         y_train: pd.Series,
         cv_folds: int = 5,
         max_evals: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Perform hyperparameter optimization using sklearn's native methods
 
@@ -79,7 +79,7 @@ class NativeRandomForest(NativeAlgorithmBase):
             "min_samples_lea",
         ]
 
-    def _get_param_space(self, n_features: int) -> dict:
+    def _get_param_space(self, n_features: int) -> dict[str, Any]:
         """Define parameter space for Random Forest"""
         return {
             "n_estimators": [100, 200, 300, 500, 800],
@@ -100,7 +100,7 @@ class NativeRandomForest(NativeAlgorithmBase):
         y_train: pd.Series,
         cv_folds: int = 5,
         max_evals: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Optimize Random Forest hyperparameters"""
 
         # Get appropriate model class
@@ -152,7 +152,7 @@ class NativeGradientBoosting(NativeAlgorithmBase):
             "min_samples_lea",
         ]
 
-    def _get_param_space(self) -> dict:
+    def _get_param_space(self) -> dict[str, Any]:
         """Define parameter space for Gradient Boosting"""
         return {
             "n_estimators": [100, 200, 300, 500],
@@ -170,7 +170,7 @@ class NativeGradientBoosting(NativeAlgorithmBase):
         y_train: pd.Series,
         cv_folds: int = 5,
         max_evals: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Optimize Gradient Boosting hyperparameters"""
 
         # Get appropriate model class
@@ -217,7 +217,7 @@ class NativeLinearModel(NativeAlgorithmBase):
         super().__init__(task_type, random_state)
         self.int_params = ["max_iter"]
 
-    def _get_param_space(self) -> dict:
+    def _get_param_space(self) -> dict[str, Any]:
         """Define parameter space for Linear Models"""
         if self.task_type == "classification":
             return {
@@ -239,7 +239,7 @@ class NativeLinearModel(NativeAlgorithmBase):
         y_train: pd.Series,
         cv_folds: int = 5,
         max_evals: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Optimize Linear Model hyperparameters"""
 
         # Get appropriate model class
@@ -331,7 +331,7 @@ class NativeAlgorithmSelector:
         algorithms: list[str] | None = None,
         cv_folds: int = 5,
         max_evals_per_algo: int = 20,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Find the best algorithm and hyperparameters
 

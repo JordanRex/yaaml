@@ -5,6 +5,8 @@ Native categorical encoding implementations using sklearn
 
 from __future__ import annotations
 
+from typing import Any
+
 import pandas as pd
 from sklearn.feature_extraction import FeatureHasher
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder, OrdinalEncoder
@@ -30,8 +32,8 @@ class NativeEncoder:
         """
         self.encoding_method = encoding_method
         self.handle_unknown = handle_unknown
-        self.encoders = {}
-        self.categorical_columns = None
+        self.encoders: dict[str, Any] = {}
+        self.categorical_columns: list[str] | None = None
         self.fitted = False
 
     def fit(self, X: pd.DataFrame) -> "NativeEncoder":
@@ -218,8 +220,8 @@ class TargetEncoder:
         """
         self.smoothing = smoothing
         self.min_samples_leaf = min_samples_leaf
-        self.encodings = {}
-        self.global_mean = None
+        self.encodings: dict[str, dict[Any, float]] = {}
+        self.global_mean: float | None = None
         self.fitted = False
 
     def fit(self, X: pd.DataFrame, y: pd.Series) -> "TargetEncoder":
@@ -312,7 +314,7 @@ def encode_categorical_features(
     valid_df: pd.DataFrame | None = None,
     target: pd.Series | None = None,
     method: str = "ordinal",
-) -> pd.DataFrame | tuple:
+) -> pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]:
     """
     Convenience function for categorical encoding
 
@@ -332,14 +334,17 @@ def encode_categorical_features(
     pd.DataFrame or tuple
         Encoded training data, or tuple of (train, valid) if valid_df provided
     """
+    encoder: TargetEncoder | NativeEncoder
     if method == "target":
         if target is None:
             raise ValueError("Target variable required for target encoding")
-        encoder = TargetEncoder()
-        train_encoded = encoder.fit_transform(train_df, target)
+        target_encoder = TargetEncoder()
+        train_encoded = target_encoder.fit_transform(train_df, target)
+        encoder = target_encoder
     else:
-        encoder = NativeEncoder(encoding_method=method)
-        train_encoded = encoder.fit_transform(train_df)
+        native_encoder = NativeEncoder(encoding_method=method)
+        train_encoded = native_encoder.fit_transform(train_df)
+        encoder = native_encoder
 
     if valid_df is not None:
         valid_encoded = encoder.transform(valid_df)

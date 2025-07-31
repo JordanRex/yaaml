@@ -47,7 +47,7 @@ def process_file(file_path: Path) -> None:
         print(f"Error processing {file_path}: {e}")
 
 
-def main():
+def main() -> None:
     """Main function."""
     root = Path(".")
     

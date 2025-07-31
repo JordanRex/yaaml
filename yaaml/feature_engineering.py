@@ -5,6 +5,8 @@ Native feature engineering using sklearn methods
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from scipy import sparse
@@ -52,11 +54,11 @@ class FeatureEngineering:
         self.scaling_method = scaling_method
 
         # Fitted components
-        self.scaler = None
-        self.decomposers = {}
-        self.clusterers = {}
-        self.poly_features = None
-        self.feature_names = None
+        self.scaler: StandardScaler | MinMaxScaler | None = None
+        self.decomposers: dict[str, Any] = {}
+        self.clusterers: dict[str, KMeans] = {}
+        self.poly_features: PolynomialFeatures | None = None
+        self.feature_names: list[str] | None = None
         self.fitted = False
 
     def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> "FeatureEngineering":
@@ -206,7 +208,7 @@ class FeatureEngineering:
             poly_result = self.poly_features.transform(X_scaled)
             # Convert sparse matrix to dense if needed
             if sparse.issparse(poly_result):
-                poly_array: np.ndarray = poly_result.toarray()  # type: ignore
+                poly_array: np.ndarray = poly_result.toarray()
             else:
                 poly_array = np.asarray(poly_result)
 
@@ -256,7 +258,7 @@ class BinningTransformer:
         """
         self.n_bins = n_bins
         self.strategy = strategy
-        self.bin_edges = {}
+        self.bin_edges: dict[str, np.ndarray] = {}
         self.fitted = False
 
     def fit(self, X: pd.DataFrame) -> "BinningTransformer":
@@ -306,7 +308,7 @@ class BinningTransformer:
 
         for col, edges in self.bin_edges.items():
             if col in X.columns:
-                binned_values = pd.cut(
+                binned_values = pd.cut(  # type: ignore[call-overload]
                     X[col], bins=edges, include_lowest=True, labels=False
                 )
                 X_binned[f"{col}_binned"] = binned_values

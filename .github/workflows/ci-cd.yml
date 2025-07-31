@@ -32,7 +32,7 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies with uv
-      run: uv sync --all-extras
+      run: uv sync --extra dev
 
     - name: Test Python 3.12+ Features
       run: |
@@ -76,7 +76,7 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies with uv
-      run: uv sync --all-extras
+      run: uv sync --extra dev
 
     - name: Lint with flake8
       run: |
@@ -95,7 +95,7 @@ jobs:
 
     - name: Type checking with mypy (Python 3.12+ features)
       run: |
-        uv run mypy yaaml --ignore-missing-imports --python-version=3.12
+        uv run mypy yaaml/
       continue-on-error: true  # Type checking is informational for now
 
     - name: Verify no legacy typing imports
@@ -126,7 +126,7 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies with uv
-      run: uv sync --all-extras
+      run: uv sync --extra dev
 
     - name: Run Unit Tests
       run: |
@@ -164,7 +164,7 @@ jobs:
       run: uv python install ${{ matrix.python-version }}
 
     - name: Install dependencies with uv
-      run: uv sync --all-extras
+      run: uv sync --extra dev
 
     - name: Run Realistic AutoML Tests
       run: |
@@ -257,7 +257,7 @@ jobs:
       run: uv python install 3.12
 
     - name: Install dependencies with uv
-      run: uv sync --all-extras
+      run: uv sync --extra dev
 
     - name: Run integration tests
       run: |
@@ -285,7 +285,7 @@ jobs:
       run: uv python install 3.12
 
     - name: Install dependencies with uv
-      run: uv sync --all-extras
+      run: uv sync --extra dev
 
     - name: Build package
       run: |

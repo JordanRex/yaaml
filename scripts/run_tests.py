@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 
 
-def find_python_command():
+def find_python_command() -> str:
     """Find the appropriate Python command to use."""
     # If we're already running with Python, use the same executable
     current_python = sys.executable
@@ -37,7 +37,7 @@ def find_python_command():
     return "python3"  # fallback
 
 
-def run_command(command, description="Running command"):
+def run_command(command: str, description: str = "Running command") -> bool:
     """Run a shell command and return success status."""
     print(f"🔧 {description}...")
     try:
@@ -49,7 +49,7 @@ def run_command(command, description="Running command"):
         return False
 
 
-def cleanup_coverage_files():
+def cleanup_coverage_files() -> None:
     """Clean up any coverage files that may have been created in the root directory."""
     root_dir = Path(".")
 
@@ -73,14 +73,14 @@ def cleanup_coverage_files():
             print(f"⚠️  Could not remove {htmlcov_root}: {e}")
 
 
-def ensure_coverage_directory():
+def ensure_coverage_directory() -> Path:
     """Ensure coverage directory exists."""
     coverage_dir = Path("coverage")
     coverage_dir.mkdir(exist_ok=True)
     return coverage_dir
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(description="YAAML Test Runner")
     parser.add_argument(
         "--coverage", action="store_true", help="Run tests with coverage"

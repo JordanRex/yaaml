@@ -23,7 +23,7 @@ from sklearn.model_selection import KFold, StratifiedKFold, cross_val_score
 
 
 def evaluate_model(
-    model,
+    model: Any,
     X_train: pd.DataFrame,
     y_train: pd.Series,
     X_test: pd.DataFrame | None = None,
@@ -407,7 +407,7 @@ def split_features_target(
     return X, y
 
 
-def print_model_summary(model, feature_names: list[str] | None = None) -> None:
+def print_model_summary(model: Any, feature_names: list[str] | None = None) -> None:
     """
     Print a summary of the trained model
 
@@ -451,6 +451,6 @@ def print_model_summary(model, feature_names: list[str] | None = None) -> None:
 
 
 # Backward compatibility functions
-def helpers_function():
+def helpers_function() -> None:
     """Placeholder for backward compatibility"""
     pass

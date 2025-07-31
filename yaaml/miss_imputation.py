@@ -5,6 +5,8 @@ Native imputation methods using sklearn
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from sklearn.experimental import enable_iterative_imputer  # noqa: F401
@@ -25,9 +27,9 @@ class DataFrameImputer:
             'knn', 'iterative'
         """
         self.strategy = strategy
-        self.num_imputer = None
-        self.cat_imputer = None
-        self.advanced_imputer = None
+        self.num_imputer: SimpleImputer | None = None
+        self.cat_imputer: SimpleImputer | None = None
+        self.advanced_imputer: KNNImputer | IterativeImputer | None = None
         self.numeric_columns: list[str] | None = None
         self.categorical_columns: list[str] | None = None
         self.fitted = False
@@ -153,7 +155,7 @@ class DataFrameImputer:
 
 def impute_missing_values(
     train_df: pd.DataFrame, valid_df: pd.DataFrame | None = None, strategy: str = "mean"
-) -> pd.DataFrame | tuple:
+) -> pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]:
     """
     Convenience function for missing value imputation
 

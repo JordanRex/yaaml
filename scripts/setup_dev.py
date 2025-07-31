@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 
-def check_uv():
+def check_uv() -> None:
     """Check if uv is installed."""
     if not shutil.which("uv"):
         print("❌ uv is not installed!")
@@ -25,7 +25,7 @@ def check_uv():
     print(f"✅ Found uv: {result.stdout.strip()}")
 
 
-def check_project():
+def check_project() -> None:
     """Verify we're in the right directory."""
     if not Path("pyproject.toml").exists():
         print("❌ pyproject.toml not found!")
@@ -34,7 +34,7 @@ def check_project():
     print("✅ Found pyproject.toml")
 
 
-def run_command(cmd, description):
+def run_command(cmd: list[str], description: str) -> bool:
     """Run a command and handle errors."""
     print(f"\n🔧 {description}...")
     try:
@@ -46,7 +46,7 @@ def run_command(cmd, description):
         return False
 
 
-def main():
+def main() -> None:
     """Set up the development environment."""
     print("🚀 Setting up YAAML Development Environment")
     print("=" * 50)
@@ -55,8 +55,8 @@ def main():
     check_uv()
     check_project()
     
-    # Step 2: Install everything with uv
-    if not run_command(["uv", "sync", "--all-extras"], "Installing all dependencies"):
+    # Step 2: Install all development dependencies (includes build tools)
+    if not run_command(["uv", "sync", "--extra", "dev"], "Installing development dependencies with build tools"):
         sys.exit(1)
     
     # Step 3: Setup pre-commit hooks

@@ -60,25 +60,25 @@ class YAAMLAutoML:
         self.sampling_strategy = sampling_strategy
 
         # Pipeline components - will be initialized when fit is called
-        self.imputer = None
-        self.encoder = None
-        self.feature_engineer = None
-        self.feature_selector = None
-        self.sampler = None
-        self.model = None
-        self.best_params = None
-        self.best_score = None
+        self.imputer: missimp.DataFrameImputer | None = None
+        self.encoder: encoders.NativeEncoder | None = None
+        self.feature_engineer: feateng.FeatureEngineering | None = None
+        self.feature_selector: featsel.FeatureSelector | None = None
+        self.sampler: sampler.NativeSampler | None = None
+        self.model: Any | None = None
+        self.best_params: dict[str, Any] | None = None
+        self.best_score: float | None = None
 
         # Training data references
-        self.X_train = None
-        self.y_train = None
-        self.feature_names = None
+        self.X_train: pd.DataFrame | None = None
+        self.y_train: pd.Series | np.ndarray | None = None
+        self.feature_names: list[str] | None = None
         self.preprocessing_fitted = False
 
         # Set random seeds for reproducibility
         np.random.seed(self.random_seed)
 
-    def fit(self, X, y, X_valid=None, y_valid=None):
+    def fit(self, X: pd.DataFrame, y: pd.Series | np.ndarray, X_valid: pd.DataFrame | None = None, y_valid: pd.Series | np.ndarray | None = None) -> "YAAMLAutoML":
         """
         Fit the AutoML pipeline to training data.
 
@@ -107,14 +107,17 @@ class YAAMLAutoML:
             else [f"feature_{i}" for i in range(X.shape[1])]
         )
 
+        # Ensure y is a pandas Series for consistent processing
+        y_series = pd.Series(y) if not isinstance(y, pd.Series) else y
+
         # Build and fit preprocessing pipeline
-        X_processed = self._fit_preprocessing_pipeline(X, y)
+        X_processed = self._fit_preprocessing_pipeline(X, y_series)
 
         # Apply sampling if needed
         if self.sampling_strategy != "none":
-            X_processed, y_processed = self._apply_sampling(X_processed, y)
+            X_processed, y_processed = self._apply_sampling(X_processed, y_series)
         else:
-            y_processed = y
+            y_processed = y_series
 
         # Use native algorithm selector for hyperparameter optimization
         if self.verbosity > 0:
@@ -125,14 +128,9 @@ class YAAMLAutoML:
         )
 
         # Find best algorithm and parameters
-        y_series = (
-            pd.Series(y_processed)
-            if not isinstance(y_processed, pd.Series)
-            else y_processed
-        )
         result = algo_selector.find_best_algorithm(
             X_processed,
-            y_series,
+            y_processed,
             algorithms=["random_forest", "gradient_boosting", "linear_model"],
             cv_folds=self.cv_folds,
             max_evals_per_algo=max(
@@ -152,15 +150,15 @@ class YAAMLAutoML:
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> np.ndarray:
         """Make predictions on new data."""
         if self.model is None:
             raise ValueError("Model has not been trained. Call fit() first.")
 
         X_processed = self._preprocess_features(X)
-        return self.model.predict(X_processed)
+        return self.model.predict(X_processed)  # type: ignore[no-any-return]
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: pd.DataFrame) -> np.ndarray:
         """Get prediction probabilities for classification tasks."""
         if self.mode == "regression":
             raise ValueError("predict_proba is not supported for regression tasks")
@@ -171,7 +169,7 @@ class YAAMLAutoML:
         X_processed = self._preprocess_features(X)
 
         if hasattr(self.model, "predict_proba"):
-            return self.model.predict_proba(X_processed)
+            return self.model.predict_proba(X_processed)  # type: ignore[no-any-return]
         else:
             raise ValueError(
                 "The trained model does not support probability predictions"
@@ -231,7 +229,7 @@ class YAAMLAutoML:
 
         return X_processed
 
-    def _apply_sampling(self, X: pd.DataFrame, y: pd.Series) -> tuple:
+    def _apply_sampling(self, X: pd.DataFrame, y: pd.Series) -> tuple[pd.DataFrame, pd.Series]:
         """Apply sampling strategy for imbalanced datasets."""
         if self.mode == "regression":
             return X, y  # No sampling for regression
@@ -289,7 +287,7 @@ class YAAMLAutoML:
 
         return X_processed
 
-    def score(self, X, y):
+    def score(self, X: pd.DataFrame, y: pd.Series | np.ndarray) -> float:
         """Get model score on given data"""
         if self.model is None:
             raise ValueError("Model has not been trained. Call fit() first.")
@@ -299,13 +297,13 @@ class YAAMLAutoML:
         if self.mode == "classification":
             from sklearn.metrics import accuracy_score
 
-            return accuracy_score(y, predictions)
+            return accuracy_score(y, predictions)  # type: ignore[no-any-return]
         else:
             from sklearn.metrics import r2_score
 
-            return r2_score(y, predictions)
+            return r2_score(y, predictions)  # type: ignore[no-any-return]
 
-    def get_feature_importance(self):
+    def get_feature_importance(self) -> pd.DataFrame | None:
         """Get feature importance from trained model"""
         if self.model is None:
             raise ValueError("Model has not been trained. Call fit() first.")

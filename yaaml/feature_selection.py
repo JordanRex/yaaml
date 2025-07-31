@@ -5,6 +5,8 @@ Native feature selection using sklearn methods
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -54,11 +56,11 @@ class FeatureSelector:
         self.task_type = task_type
 
         # Fitted selectors
-        self.variance_selector = None
-        self.univariate_selector = None
-        self.rfe_selector = None
-        self.mutual_info_selector = None
-        self.selected_features = None
+        self.variance_selector: VarianceThreshold | None = None
+        self.univariate_selector: SelectKBest | SelectPercentile | None = None
+        self.rfe_selector: RFECV | None = None
+        self.mutual_info_selector: SelectKBest | SelectPercentile | None = None
+        self.selected_features: list[str] | None = None
         self.fitted = False
 
     def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> "FeatureSelector":
@@ -204,7 +206,7 @@ class FeatureSelector:
         if not self.fitted:
             return None
 
-        importance_data = []
+        importance_data: list[dict[str, Any]] = []
 
         # Univariate scores
         if self.univariate_selector is not None and hasattr(
@@ -285,7 +287,7 @@ def select_features(
 class feat_selection(FeatureSelector):
     """Legacy class name for backward compatibility"""
 
-    def __init__(self, train, valid, y_train, t=0.2):
+    def __init__(self, train: pd.DataFrame, valid: pd.DataFrame, y_train: pd.Series, t: float = 0.2) -> None:
         """Legacy constructor"""
         super().__init__(
             methods=["variance", "rfe"],

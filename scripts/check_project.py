@@ -12,24 +12,24 @@ import sys
 from pathlib import Path
 
 
-def check_mark(condition, message):
+def check_mark(condition: bool, message: str) -> bool:
     """Print a check mark or X based on condition."""
     symbol = "✅" if condition else "❌"
     print(f"{symbol} {message}")
     return condition
 
 
-def warning(message):
+def warning(message: str) -> None:
     """Print a warning message."""
     print(f"⚠️  {message}")
 
 
-def info(message):
+def info(message: str) -> None:
     """Print an info message."""
     print(f"ℹ️  {message}")
 
 
-def check_python_version():
+def check_python_version() -> bool:
     """Check Python version."""
     major, minor = sys.version_info[:2]
     version_ok = major == 3 and minor >= 8
@@ -37,14 +37,14 @@ def check_python_version():
     return version_ok
 
 
-def check_file_exists(filepath, description):
+def check_file_exists(filepath: str, description: str) -> bool:
     """Check if a file exists."""
     exists = Path(filepath).exists()
     check_mark(exists, f"{description}: {filepath}")
     return exists
 
 
-def check_directory_structure():
+def check_directory_structure() -> bool:
     """Check the basic directory structure."""
     print("\n📁 Directory Structure:")
     required_dirs = [
@@ -62,7 +62,7 @@ def check_directory_structure():
     return all_good
 
 
-def check_core_files():
+def check_core_files() -> bool:
     """Check core project files."""
     print("\n📄 Core Files:")
     required_files = [
@@ -82,7 +82,7 @@ def check_core_files():
     return all_good
 
 
-def check_python_files():
+def check_python_files() -> bool:
     """Check main Python files."""
     print("\n🐍 Python Files:")
     required_files = [
@@ -105,7 +105,7 @@ def check_python_files():
     return all_good
 
 
-def check_imports():
+def check_imports() -> bool:
     """Check if main modules can be imported."""
     print("\n📦 Import Checks:")
     modules_to_check = [
@@ -131,7 +131,7 @@ def check_imports():
     return all_good
 
 
-def check_dependencies():
+def check_dependencies() -> bool:
     """Check if required tools are available."""
     print("\n🛠️  Dependencies:")
     tools = [
@@ -164,7 +164,7 @@ def check_dependencies():
     return all_good
 
 
-def check_git_status():
+def check_git_status() -> bool:
     """Check git repository status."""
     print("\n📋 Git Status:")
     try:
@@ -195,7 +195,7 @@ def check_git_status():
         return False
 
 
-def run_quick_tests():
+def run_quick_tests() -> bool:
     """Run a quick test to ensure basic functionality."""
     print("\n🧪 Quick Functionality Test:")
     try:
@@ -222,7 +222,7 @@ def run_quick_tests():
         return False
 
 
-def main():
+def main() -> None:
     """Run all checks."""
     print("🔍 YAAML Project Status Check")
     print("=" * 40)

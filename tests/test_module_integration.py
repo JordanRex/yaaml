@@ -262,14 +262,17 @@ class TestUnionTypeUsage:
     def test_multiple_type_unions(self):
         """Test complex union types"""
 
-        def flexible_input(data: int | float | str | pd.Series) -> str:
+        from typing import Any
+        
+        def flexible_input(data: Any) -> str:
             if isinstance(data, (int, float)):
                 return f"number: {data}"
             elif isinstance(data, str):
                 return f"string: {data}"
             elif isinstance(data, pd.Series):
                 return f"series: length {len(data)}"
-            return "unknown"
+            else:
+                return "unknown"
 
         assert flexible_input(42) == "number: 42"
         assert flexible_input(3.14) == "number: 3.14"

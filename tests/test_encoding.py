@@ -144,11 +144,14 @@ class TestEncodeCategoricalFeatures:
             X_train, X_test, target=y_train, method="ordinal"
         )
 
+        assert isinstance(result, tuple)
         X_train_enc, X_test_enc = result
 
-        # Check shapes are preserved
+        # Check that results are DataFrames and shapes are preserved
+        assert isinstance(X_train_enc, pd.DataFrame)
+        assert isinstance(X_test_enc, pd.DataFrame)
         assert X_train_enc.shape[0] == X_train.shape[0]
-        assert X_test_enc.shape[0] == X_test.shape[0]
+        assert X_test_enc.shape[0] == X_test.shape[0]  
 
     def test_encode_categorical_features_target(self, sample_data):
         """Test the main encoding function with target encoding."""
@@ -158,11 +161,14 @@ class TestEncodeCategoricalFeatures:
             X_train, X_test, target=y_train, method="target"
         )
 
+        assert isinstance(result, tuple)
         X_train_enc, X_test_enc = result
 
-        # Check shapes are preserved
+        # Check that results are DataFrames and shapes are preserved
+        assert isinstance(X_train_enc, pd.DataFrame)
+        assert isinstance(X_test_enc, pd.DataFrame)
         assert X_train_enc.shape[0] == X_train.shape[0]
-        assert X_test_enc.shape[0] == X_test.shape[0]
+        assert X_test_enc.shape[0] == X_test.shape[0]  
 
     def test_invalid_encoding_method(self, sample_data):
         """Test error handling for invalid encoding method."""

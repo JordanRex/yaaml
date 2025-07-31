@@ -45,8 +45,8 @@ class TestDataFrameImputer:
 
         assert imputer.num_imputer is not None
         assert imputer.cat_imputer is not None
-        assert len(imputer.numeric_columns) == 2
-        assert len(imputer.categorical_columns) == 2
+        assert imputer.numeric_columns is not None and len(imputer.numeric_columns) == 2
+        assert imputer.categorical_columns is not None and len(imputer.categorical_columns) == 2
 
     def test_transform(self, sample_data_with_missing):
         """Test transforming data"""
@@ -56,11 +56,11 @@ class TestDataFrameImputer:
         result = imputer.transform(sample_data_with_missing)
 
         assert result is not None
-        assert isinstance(result, np.ndarray)
+        assert isinstance(result, pd.DataFrame)
         assert result.shape == sample_data_with_missing.shape
 
         # Check that no NaN values remain
-        assert not np.isnan(result).any()
+        assert not result.isnull().any().any()
 
     def test_fit_transform(self, sample_data_with_missing):
         """Test fit_transform method"""
@@ -68,38 +68,35 @@ class TestDataFrameImputer:
         result = imputer.fit_transform(sample_data_with_missing)
 
         assert result is not None
-        assert isinstance(result, np.ndarray)
+        assert isinstance(result, pd.DataFrame)
         assert result.shape == sample_data_with_missing.shape
-        assert not np.isnan(result).any()
+        assert not result.isnull().any().any()
 
-    def test_fancy_impute_knn(self, sample_data_with_missing):
+    def test_knn_imputation(self, sample_data_with_missing):
         """Test KNN imputation"""
-        result = DataFrameImputer.fancy_impute(
-            sample_data_with_missing, which_method="KNN"
-        )
+        imputer = DataFrameImputer(strategy="knn")
+        result = imputer.fit_transform(sample_data_with_missing)
 
         assert result is not None
-        assert isinstance(result, np.ndarray)
+        assert isinstance(result, pd.DataFrame)
         assert result.shape == sample_data_with_missing.shape
 
-    def test_fancy_impute_iterative(self, sample_data_with_missing):
+    def test_iterative_imputation(self, sample_data_with_missing):
         """Test Iterative imputation"""
-        result = DataFrameImputer.fancy_impute(
-            sample_data_with_missing, which_method="IterativeImputer"
-        )
+        imputer = DataFrameImputer(strategy="iterative")
+        result = imputer.fit_transform(sample_data_with_missing)
 
         assert result is not None
-        assert isinstance(result, np.ndarray)
+        assert isinstance(result, pd.DataFrame)
         assert result.shape == sample_data_with_missing.shape
 
-    def test_fancy_impute_unknown_method(self, sample_data_with_missing):
-        """Test that unknown method defaults to KNN"""
-        result = DataFrameImputer.fancy_impute(
-            sample_data_with_missing, which_method="UnknownMethod"
-        )
+    def test_most_frequent_strategy(self, sample_data_with_missing):
+        """Test most frequent strategy"""
+        imputer = DataFrameImputer(strategy="most_frequent")
+        result = imputer.fit_transform(sample_data_with_missing)
 
         assert result is not None
-        assert isinstance(result, np.ndarray)
+        assert isinstance(result, pd.DataFrame)
 
     def test_no_missing_data(self):
         """Test behavior with no missing data"""
