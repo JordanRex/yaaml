@@ -69,7 +69,6 @@ class TestNativeEncoder:
         ), "One-hot encoding should increase number of columns"
 
         # Check that all values are 0 or 1 for new columns
-        categorical_cols = X_train.select_dtypes(include=["object"]).columns
         original_cols = X_train.select_dtypes(exclude=["object"]).columns.tolist()
         new_cols = [col for col in X_encoded.columns if col not in original_cols]
 
@@ -151,7 +150,7 @@ class TestEncodeCategoricalFeatures:
         assert isinstance(X_train_enc, pd.DataFrame)
         assert isinstance(X_test_enc, pd.DataFrame)
         assert X_train_enc.shape[0] == X_train.shape[0]
-        assert X_test_enc.shape[0] == X_test.shape[0]  
+        assert X_test_enc.shape[0] == X_test.shape[0]
 
     def test_encode_categorical_features_target(self, sample_data):
         """Test the main encoding function with target encoding."""
@@ -168,7 +167,7 @@ class TestEncodeCategoricalFeatures:
         assert isinstance(X_train_enc, pd.DataFrame)
         assert isinstance(X_test_enc, pd.DataFrame)
         assert X_train_enc.shape[0] == X_train.shape[0]
-        assert X_test_enc.shape[0] == X_test.shape[0]  
+        assert X_test_enc.shape[0] == X_test.shape[0]
 
     def test_invalid_encoding_method(self, sample_data):
         """Test error handling for invalid encoding method."""

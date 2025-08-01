@@ -287,7 +287,13 @@ def select_features(
 class feat_selection(FeatureSelector):
     """Legacy class name for backward compatibility"""
 
-    def __init__(self, train: pd.DataFrame, valid: pd.DataFrame, y_train: pd.Series, t: float = 0.2) -> None:
+    def __init__(
+        self,
+        train: pd.DataFrame,
+        valid: pd.DataFrame,
+        y_train: pd.Series,
+        t: float = 0.2,
+    ) -> None:
         """Legacy constructor"""
         super().__init__(
             methods=["variance", "rfe"],

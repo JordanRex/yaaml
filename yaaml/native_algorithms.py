@@ -43,7 +43,9 @@ class NativeAlgorithmBase:
         else:
             return "r2"
 
-    def _validate_and_cast_params(self, params: dict[str, Any], int_params: list[str]) -> dict[str, Any]:
+    def _validate_and_cast_params(
+        self, params: dict[str, Any], int_params: list[str]
+    ) -> dict[str, Any]:
         """Ensure specified parameters are integers"""
         validated_params = params.copy()
         for param in int_params:
@@ -76,7 +78,7 @@ class NativeRandomForest(NativeAlgorithmBase):
             "max_depth",
             "n_estimators",
             "min_samples_split",
-            "min_samples_lea",
+            "min_samples_leaf",
         ]
 
     def _get_param_space(self, n_features: int) -> dict[str, Any]:
@@ -85,7 +87,7 @@ class NativeRandomForest(NativeAlgorithmBase):
             "n_estimators": [100, 200, 300, 500, 800],
             "max_depth": [3, 5, 7, 10, None],
             "min_samples_split": [2, 5, 10],
-            "min_samples_lea": [1, 2, 4],
+            "min_samples_leaf": [1, 2, 4],
             "max_features": ["sqrt", "log2", min(20, max(1, n_features // 3))],
             "criterion": (
                 ["gini", "entropy"]
@@ -149,7 +151,7 @@ class NativeGradientBoosting(NativeAlgorithmBase):
             "max_depth",
             "n_estimators",
             "min_samples_split",
-            "min_samples_lea",
+            "min_samples_leaf",
         ]
 
     def _get_param_space(self) -> dict[str, Any]:
@@ -159,7 +161,7 @@ class NativeGradientBoosting(NativeAlgorithmBase):
             "learning_rate": [0.01, 0.05, 0.1, 0.2],
             "max_depth": [3, 4, 5, 6],
             "min_samples_split": [2, 5, 10],
-            "min_samples_lea": [1, 2, 4],
+            "min_samples_leaf": [1, 2, 4],
             "subsample": [0.8, 0.9, 1.0],
             "max_features": ["sqrt", "log2", None],
         }
@@ -217,15 +219,48 @@ class NativeLinearModel(NativeAlgorithmBase):
         super().__init__(task_type, random_state)
         self.int_params = ["max_iter"]
 
-    def _get_param_space(self) -> dict[str, Any]:
+    def _get_param_space(self) -> dict[str, Any] | list[dict[str, Any]]:
         """Define parameter space for Linear Models"""
         if self.task_type == "classification":
-            return {
-                "C": [0.001, 0.01, 0.1, 1, 10, 100],
-                "penalty": ["l1", "l2", "elasticnet"],
-                "solver": ["liblinear", "saga"],
-                "max_iter": [1000, 2000, 3000],
-            }
+            # Use a list of parameter combinations to avoid invalid sklearn combinations
+            return [
+                # L1 penalty with liblinear solver
+                {
+                    "C": [0.001, 0.01, 0.1, 1, 10, 100],
+                    "penalty": ["l1"],
+                    "solver": ["liblinear"],
+                    "max_iter": [1000, 2000, 3000],
+                },
+                # L2 penalty with liblinear solver
+                {
+                    "C": [0.001, 0.01, 0.1, 1, 10, 100],
+                    "penalty": ["l2"],
+                    "solver": ["liblinear"],
+                    "max_iter": [1000, 2000, 3000],
+                },
+                # L1 penalty with saga solver
+                {
+                    "C": [0.001, 0.01, 0.1, 1, 10, 100],
+                    "penalty": ["l1"],
+                    "solver": ["saga"],
+                    "max_iter": [1000, 2000, 3000],
+                },
+                # L2 penalty with saga solver
+                {
+                    "C": [0.001, 0.01, 0.1, 1, 10, 100],
+                    "penalty": ["l2"],
+                    "solver": ["saga"],
+                    "max_iter": [1000, 2000, 3000],
+                },
+                # Elasticnet penalty with saga solver and l1_ratio
+                {
+                    "C": [0.001, 0.01, 0.1, 1, 10, 100],
+                    "penalty": ["elasticnet"],
+                    "solver": ["saga"],
+                    "l1_ratio": [0.1, 0.3, 0.5, 0.7, 0.9],
+                    "max_iter": [1000, 2000, 3000],
+                },
+            ]
         else:
             return {
                 "alpha": [0.001, 0.01, 0.1, 1, 10, 100],

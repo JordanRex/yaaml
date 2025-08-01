@@ -17,10 +17,10 @@ def check_uv() -> None:
         print("❌ uv is not installed!")
         print("\n📦 Install uv first:")
         print("   curl -LsSf https://astral.sh/uv/install.sh | sh")
-        print("   # or")  
+        print("   # or")
         print("   pip install uv")
         sys.exit(1)
-    
+
     result = subprocess.run(["uv", "--version"], capture_output=True, text=True)
     print(f"✅ Found uv: {result.stdout.strip()}")
 
@@ -38,7 +38,7 @@ def run_command(cmd: list[str], description: str) -> bool:
     """Run a command and handle errors."""
     print(f"\n🔧 {description}...")
     try:
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
         print(f"✅ {description} completed")
         return True
     except subprocess.CalledProcessError as e:
@@ -50,24 +50,32 @@ def main() -> None:
     """Set up the development environment."""
     print("🚀 Setting up YAAML Development Environment")
     print("=" * 50)
-    
+
     # Step 1: Check prerequisites
     check_uv()
     check_project()
-    
+
     # Step 2: Install all development dependencies (includes build tools)
-    if not run_command(["uv", "sync", "--extra", "dev"], "Installing development dependencies with build tools"):
+    if not run_command(
+        ["uv", "sync", "--extra", "dev"],
+        "Installing development dependencies with build tools",
+    ):
         sys.exit(1)
-    
+
     # Step 3: Setup pre-commit hooks
-    if not run_command(["uv", "run", "pre-commit", "install"], "Installing pre-commit hooks"):
+    if not run_command(
+        ["uv", "run", "pre-commit", "install"], "Installing pre-commit hooks"
+    ):
         sys.exit(1)
-    
+
     # Step 4: Quick verification
     print("\n🧪 Quick verification...")
-    if not run_command(["uv", "run", "python", "-c", "import yaaml; print('✅ Package import works')"], "Testing package import"):
+    if not run_command(
+        ["uv", "run", "python", "-c", "import yaaml; print('✅ Package import works')"],
+        "Testing package import",
+    ):
         sys.exit(1)
-    
+
     # Success!
     print("\n" + "=" * 50)
     print("🎉 Development environment ready!")

@@ -5,7 +5,6 @@ Validates the entire project structure and setup.
 """
 
 import importlib.util
-import os
 import shutil
 import subprocess
 import sys
@@ -202,18 +201,19 @@ def run_quick_tests() -> bool:
         # Try to import and create the main class
         from yaaml.main import YAAMLAutoML
 
-        automl = YAAMLAutoML(mode="classification")
+        YAAMLAutoML(mode="classification")
         check_mark(True, "YAAMLAutoML class can be instantiated")
 
         # Try basic encoding functions
-        from yaaml.encoding import NativeEncoder, encode_categorical_features
+        from yaaml.encoding import NativeEncoder
 
+        NativeEncoder()
         check_mark(True, "Encoding functions available")
 
         # Try imputation class
         from yaaml.miss_imputation import DataFrameImputer
 
-        imputer = DataFrameImputer()
+        DataFrameImputer()
         check_mark(True, "DataFrameImputer class available")
 
         return True

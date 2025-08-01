@@ -5,8 +5,6 @@ Native imputation methods using sklearn
 
 from __future__ import annotations
 
-from typing import Any
-
 import numpy as np
 import pandas as pd
 from sklearn.experimental import enable_iterative_imputer  # noqa: F401
@@ -181,10 +179,3 @@ def impute_missing_values(
         return train_imputed, valid_imputed
 
     return train_imputed
-
-
-# For backward compatibility
-class miss_val_impute_df(DataFrameImputer):
-    """Legacy class name for backward compatibility"""
-
-    pass

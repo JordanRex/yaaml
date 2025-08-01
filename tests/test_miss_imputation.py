@@ -46,7 +46,10 @@ class TestDataFrameImputer:
         assert imputer.num_imputer is not None
         assert imputer.cat_imputer is not None
         assert imputer.numeric_columns is not None and len(imputer.numeric_columns) == 2
-        assert imputer.categorical_columns is not None and len(imputer.categorical_columns) == 2
+        assert (
+            imputer.categorical_columns is not None
+            and len(imputer.categorical_columns) == 2
+        )
 
     def test_transform(self, sample_data_with_missing):
         """Test transforming data"""
@@ -113,14 +116,17 @@ class TestDataFrameImputer:
     def test_only_numeric_data(self):
         """Test with only numeric data"""
         data = pd.DataFrame(
-            {"col1": [1.0, 2.0, np.nan, 4.0], "col2": [10.0, np.nan, 30.0, 40.0]}
+            {
+                "col1": [1.0, 2.0, np.nan, 4.0],
+                "col2": [10.0, np.nan, 30.0, 40.0],
+            }
         )
 
         imputer = DataFrameImputer()
         result = imputer.fit_transform(data)
 
         assert result is not None
-        assert not np.isnan(result).any()
+        assert not result.isnull().any().any()
 
     def test_only_categorical_data(self):
         """Test with only categorical data"""
@@ -143,4 +149,4 @@ class TestDataFrameImputer:
             result = imputer.fit_transform(sample_data_with_missing)
 
             assert result is not None
-            assert not np.isnan(result).any()
+            assert not result.isnull().any().any()

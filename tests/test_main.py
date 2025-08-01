@@ -25,7 +25,11 @@ class TestYAAMLAutoML:
     def test_init_custom_params(self):
         """Test initialization with custom parameters"""
         automl = YAAMLAutoML(
-            random_seed=123, max_evals=20, cv_folds=5, mode="regression", verbosity=0
+            random_seed=123,
+            max_evals=20,
+            cv_folds=5,
+            mode="regression",
+            verbosity=0,
         )
 
         assert automl.random_seed == 123
@@ -44,7 +48,12 @@ class TestYAAMLAutoML:
         assert automl.model is not None
         assert automl.X_train is not None
         assert automl.y_train is not None
-        assert automl.feature_names == list(X_train.columns)
+        # After feature engineering, we should have more features
+        assert automl.feature_names is not None
+        # Original features should still be present
+        assert all(col in automl.feature_names for col in X_train.columns)
+        # Remove duplicate line
+        assert len(automl.feature_names) >= len(X_train.columns)
 
     def test_fit_regression(self, sample_regression_data):
         """Test fitting on regression data"""
@@ -56,7 +65,11 @@ class TestYAAMLAutoML:
         assert automl.model is not None
         assert automl.X_train is not None
         assert automl.y_train is not None
-        assert automl.feature_names == list(X_train.columns)
+        assert automl.feature_names is not None
+        # After feature engineering, should have more features
+        assert len(automl.feature_names) >= len(X_train.columns)
+        # Original features should still be present
+        assert all(col in automl.feature_names for col in X_train.columns)
 
     def test_predict_classification(self, sample_classification_data):
         """Test prediction on classification data"""
@@ -94,8 +107,10 @@ class TestYAAMLAutoML:
         probabilities = automl.predict_proba(X_test)
 
         assert probabilities is not None
-        assert probabilities.shape[0] == len(X_test)
-        assert probabilities.shape[1] == 2  # Binary classification
+        prob_shape = getattr(probabilities, "shape", None)
+        assert prob_shape is not None
+        assert prob_shape[0] == len(X_test)
+        assert prob_shape[1] == 2  # Binary classification
         assert np.allclose(probabilities.sum(axis=1), 1.0)  # Probabilities sum to 1
 
     def test_predict_proba_regression_error(self, sample_regression_data):
@@ -106,7 +121,8 @@ class TestYAAMLAutoML:
         automl.fit(X_train, y_train)
 
         with pytest.raises(
-            ValueError, match="predict_proba is only available for classification"
+            ValueError,
+            match="predict_proba is not supported for regression tasks",
         ):
             automl.predict_proba(X_test)
 
@@ -148,8 +164,9 @@ class TestYAAMLAutoML:
         assert isinstance(importance, pd.DataFrame)
         assert "feature" in importance.columns
         assert "importance" in importance.columns
-        assert len(importance) == len(X_train.columns)
-        assert all(importance["importance"] >= 0)  # Importance should be non-negative
+        # Feature engineering creates additional features
+        assert len(importance) >= len(X_train.columns)
+        assert all(importance["importance"] >= 0)  # Non-negative
 
     def test_predict_without_fit_error(self, sample_classification_data):
         """Test that predict raises error when model is not fitted"""
@@ -170,7 +187,8 @@ class TestYAAMLAutoML:
             automl.score(X_test, y_test)
 
     def test_feature_importance_without_fit_error(self, sample_classification_data):
-        """Test that get_feature_importance raises error when model is not fitted"""
+        """Test that get_feature_importance raises error when model is
+        not fitted"""
         X_train, X_test, y_train, y_test = sample_classification_data
 
         automl = YAAMLAutoML(mode="classification", verbosity=0)

@@ -244,12 +244,12 @@ class TargetEncoder:
             # Calculate target mean for each category
             target_col = y.name if hasattr(y, "name") and y.name else "target"
             grouped_data = pd.concat([X[col], y], axis=1)
-            grouped_data.columns = [col, target_col]
+            grouped_data.columns = pd.Index([col, target_col])
 
             # Group by category and calculate statistics
             grouped = grouped_data.groupby(col)
             category_stats = grouped.agg({target_col: ["mean", "count"]}).reset_index()
-            category_stats.columns = [col, "target_mean", "count"]
+            category_stats.columns = pd.Index([col, "target_mean", "count"])
 
             # Apply smoothing
             smoothed_means = (

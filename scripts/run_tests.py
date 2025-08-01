@@ -2,46 +2,30 @@
 """
 Test runner script for YAAML.
 Provides convenient test running with different options.
-Handles different Python commands automatically.
+Uses uv for running tests in the managed environment.
 """
 
 import argparse
-import os
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 
-def find_python_command() -> str:
-    """Find the appropriate Python command to use."""
-    # If we're already running with Python, use the same executable
-    current_python = sys.executable
-    if current_python and os.path.isfile(current_python):
-        return current_python
-
-    # Otherwise, search for available Python commands
-    python_commands = ["python3", "python", "py"]
-
-    for cmd in python_commands:
-        if shutil.which(cmd):
-            try:
-                result = subprocess.run(
-                    [cmd, "--version"], capture_output=True, text=True
-                )
-                if result.returncode == 0 and "Python 3." in result.stdout:
-                    return cmd
-            except Exception:
-                continue
-
-    return "python3"  # fallback
+def check_uv() -> None:
+    """Check if uv is installed."""
+    if not shutil.which("uv"):
+        print("❌ uv is not installed!")
+        print("\n📦 Install uv first:")
+        print("   curl -LsSf https://astral.sh/uv/install.sh | sh")
+        sys.exit(1)
 
 
 def run_command(command: str, description: str = "Running command") -> bool:
     """Run a shell command and return success status."""
     print(f"🔧 {description}...")
     try:
-        result = subprocess.run(command, shell=True, check=True)
+        subprocess.run(command, shell=True, check=True)
         print(f"✅ {description} completed successfully")
         return True
     except subprocess.CalledProcessError as e:
@@ -119,12 +103,11 @@ def main() -> None:
     # Ensure coverage directory exists
     coverage_dir = ensure_coverage_directory()
 
-    # Find the appropriate Python command
-    python_cmd = find_python_command()
-    print(f"🐍 Using Python: {python_cmd}")
+    # Check that uv is available
+    check_uv()
 
-    # Build pytest command
-    cmd_parts = [python_cmd, "-m", "pytest"]
+    # Build pytest command using uv
+    cmd_parts = ["uv", "run", "python", "-m", "pytest"]
 
     if args.verbose:
         cmd_parts.append("-v")

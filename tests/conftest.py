@@ -35,7 +35,11 @@ def sample_classification_data():
 def sample_regression_data():
     """Generate sample regression dataset"""
     X, y = make_regression(
-        n_samples=500, n_features=10, n_informative=7, noise=0.1, random_state=42
+        n_samples=500,
+        n_features=10,
+        n_informative=7,
+        noise=0.1,
+        random_state=42,
     )
 
     feature_names = [f"feature_{i}" for i in range(X.shape[1])]

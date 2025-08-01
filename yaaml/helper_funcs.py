@@ -76,30 +76,44 @@ def evaluate_model(
     if task_type == "classification":
         cv = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=42)
 
-        # CV scores
-        cv_accuracy = cross_val_score(
-            model, X_train, y_train, cv=cv, scoring="accuracy"
-        )
-        cv_precision = cross_val_score(
-            model, X_train, y_train, cv=cv, scoring="precision_macro"
-        )
-        cv_recall = cross_val_score(
-            model, X_train, y_train, cv=cv, scoring="recall_macro"
-        )
-        cv_f1 = cross_val_score(model, X_train, y_train, cv=cv, scoring="f1_macro")
+        try:
+            # CV scores
+            cv_accuracy = cross_val_score(
+                model, X_train, y_train, cv=cv, scoring="accuracy"
+            )
+            cv_precision = cross_val_score(
+                model, X_train, y_train, cv=cv, scoring="precision_macro"
+            )
+            cv_recall = cross_val_score(
+                model, X_train, y_train, cv=cv, scoring="recall_macro"
+            )
+            cv_f1 = cross_val_score(model, X_train, y_train, cv=cv, scoring="f1_macro")
 
-        results.update(
-            {
-                "cv_accuracy_mean": cv_accuracy.mean(),
-                "cv_accuracy_std": cv_accuracy.std(),
-                "cv_precision_mean": cv_precision.mean(),
-                "cv_precision_std": cv_precision.std(),
-                "cv_recall_mean": cv_recall.mean(),
-                "cv_recall_std": cv_recall.std(),
-                "cv_f1_mean": cv_f1.mean(),
-                "cv_f1_std": cv_f1.std(),
-            }
-        )
+            results.update(
+                {
+                    "cv_accuracy_mean": cv_accuracy.mean(),
+                    "cv_accuracy_std": cv_accuracy.std(),
+                    "cv_precision_mean": cv_precision.mean(),
+                    "cv_precision_std": cv_precision.std(),
+                    "cv_recall_mean": cv_recall.mean(),
+                    "cv_recall_std": cv_recall.std(),
+                    "cv_f1_mean": cv_f1.mean(),
+                    "cv_f1_std": cv_f1.std(),
+                }
+            )
+        except ValueError as e:
+            # Handle cases like insufficient samples for CV splits
+            if "n_splits" in str(e) and "cannot be greater than" in str(e):
+                # Fallback to simple train/test evaluation
+                y_pred = model.predict(X_test)
+                results.update(
+                    {
+                        "test_accuracy": accuracy_score(y_test, y_pred),
+                        "cv_fallback": "insufficient_samples_for_cv",
+                    }
+                )
+            else:
+                raise
 
         # Try ROC AUC for binary classification
         if len(np.unique(y_train)) == 2:
@@ -119,24 +133,40 @@ def evaluate_model(
     else:  # regression
         cv = KFold(n_splits=cv_folds, shuffle=True, random_state=42)
 
-        cv_r2 = cross_val_score(model, X_train, y_train, cv=cv, scoring="r2")
-        cv_neg_mse = cross_val_score(
-            model, X_train, y_train, cv=cv, scoring="neg_mean_squared_error"
-        )
-        cv_neg_mae = cross_val_score(
-            model, X_train, y_train, cv=cv, scoring="neg_mean_absolute_error"
-        )
+        try:
+            cv_r2 = cross_val_score(model, X_train, y_train, cv=cv, scoring="r2")
+            cv_neg_mse = cross_val_score(
+                model, X_train, y_train, cv=cv, scoring="neg_mean_squared_error"
+            )
+            cv_neg_mae = cross_val_score(
+                model, X_train, y_train, cv=cv, scoring="neg_mean_absolute_error"
+            )
 
-        results.update(
-            {
-                "cv_r2_mean": cv_r2.mean(),
-                "cv_r2_std": cv_r2.std(),
-                "cv_mse_mean": -cv_neg_mse.mean(),
-                "cv_mse_std": cv_neg_mse.std(),
-                "cv_mae_mean": -cv_neg_mae.mean(),
-                "cv_mae_std": cv_neg_mae.std(),
-            }
-        )
+            results.update(
+                {
+                    "cv_r2_mean": cv_r2.mean(),
+                    "cv_r2_std": cv_r2.std(),
+                    "cv_mse_mean": -cv_neg_mse.mean(),
+                    "cv_mse_std": cv_neg_mse.std(),
+                    "cv_mae_mean": -cv_neg_mae.mean(),
+                    "cv_mae_std": cv_neg_mae.std(),
+                }
+            )
+        except ValueError as e:
+            # Handle cases like insufficient samples for CV splits
+            if "n_splits" in str(e) and "cannot be greater than" in str(e):
+                # Fallback to simple train/test evaluation
+                y_pred = model.predict(X_test)
+                results.update(
+                    {
+                        "test_r2": r2_score(y_test, y_pred),
+                        "test_mse": mean_squared_error(y_test, y_pred),
+                        "test_mae": mean_absolute_error(y_test, y_pred),
+                        "cv_fallback": "insufficient_samples_for_cv",
+                    }
+                )
+            else:
+                raise
 
     # Test set evaluation
     if (
@@ -218,7 +248,9 @@ def detect_data_types(df: pd.DataFrame) -> dict[str, list[str]]:
     }
 
 
-def check_data_quality(df: pd.DataFrame) -> dict[str, Any]:
+def check_data_quality(
+    df: pd.DataFrame, target: pd.Series | None = None
+) -> dict[str, Any]:
     """
     Check data quality and provide summary statistics
 
@@ -226,6 +258,8 @@ def check_data_quality(df: pd.DataFrame) -> dict[str, Any]:
     -----------
     df : pd.DataFrame
         Input dataframe
+    target : pd.Series, optional
+        Target variable for additional analysis
 
     Returns:
     --------
@@ -236,6 +270,9 @@ def check_data_quality(df: pd.DataFrame) -> dict[str, Any]:
         "shape": df.shape,
         "memory_usage_mb": df.memory_usage(deep=True).sum() / (1024 * 1024),
         "missing_values": {},
+        "missing_percentage": (
+            df.isnull().sum().sum() / (df.shape[0] * df.shape[1]) * 100
+        ),
         "duplicate_rows": df.duplicated().sum(),
         "column_types": detect_data_types(df),
     }
@@ -304,7 +341,7 @@ def detect_outliers_iqr(series: pd.Series, factor: float = 1.5) -> int:
     upper_bound = Q3 + factor * IQR
 
     outliers = ((series < lower_bound) | (series > upper_bound)).sum()
-    return outliers
+    return int(outliers)
 
 
 def memory_optimization(df: pd.DataFrame, verbose: bool = True) -> pd.DataFrame:
@@ -345,8 +382,8 @@ def memory_optimization(df: pd.DataFrame, verbose: bool = True) -> pd.DataFrame:
 
         elif str(col_type)[:5] == "float":
             # Float optimization
-            c_min = df_optimized[col].min()
-            c_max = df_optimized[col].max()
+            c_min = float(df_optimized[col].min())
+            c_max = float(df_optimized[col].max())
 
             if c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
                 df_optimized[col] = df_optimized[col].astype(np.float32)
@@ -418,9 +455,9 @@ def print_model_summary(model: Any, feature_names: list[str] | None = None) -> N
     feature_names : list, optional
         Names of features
     """
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(f"MODEL SUMMARY: {type(model).__name__}")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     # Model parameters
     print("\nModel Parameters:")
@@ -435,7 +472,7 @@ def print_model_summary(model: Any, feature_names: list[str] | None = None) -> N
 
         for i in range(min(10, len(indices))):
             idx = indices[i]
-            print(f"  {i+1}. {feature_names[idx]}: {importances[idx]:.4f}")
+            print(f"  {i + 1}. {feature_names[idx]}: {importances[idx]:.4f}")
 
     # Model-specific information
     if hasattr(model, "n_estimators"):
@@ -447,7 +484,7 @@ def print_model_summary(model: Any, feature_names: list[str] | None = None) -> N
     if hasattr(model, "n_features_in_"):
         print(f"Number of features used: {model.n_features_in_}")
 
-    print(f"{'='*50}\n")
+    print(f"{'=' * 50}\n")
 
 
 # Backward compatibility functions

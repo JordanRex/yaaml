@@ -36,7 +36,7 @@ python scripts/check_project.py
 ```toml
 dependencies = [
     "numpy>=2.0.0",
-    "pandas>=2.0.0", 
+    "pandas>=2.0.0",
     "scikit-learn>=1.5.0"
 ]
 ```
@@ -59,7 +59,7 @@ dev = [
 # Production (11 packages)
 uv sync --no-dev
 
-# Development (62 packages) 
+# Development (62 packages)
 uv sync --extra dev
 
 # With documentation

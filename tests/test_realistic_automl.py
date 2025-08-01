@@ -93,7 +93,8 @@ class TestRealisticAutoML:
         )
 
         df["location"] = np.random.choice(
-            ["NYC", "SF", "LA", "Chicago", "Boston", "Austin", "Seattle"], size=len(df)
+            ["NYC", "SF", "LA", "Chicago", "Boston", "Austin", "Seattle"],
+            size=len(df),
         )
 
         # Substantial missing values
@@ -116,7 +117,11 @@ class TestRealisticAutoML:
 
         # Regression with noise
         X, y = make_regression(
-            n_samples=300, n_features=6, n_informative=4, noise=0.2, random_state=42
+            n_samples=300,
+            n_features=6,
+            n_informative=4,
+            noise=0.2,
+            random_state=42,
         )[
             :2
         ]  # Only take X and y, not coef
@@ -174,7 +179,12 @@ class TestRealisticAutoML:
         assert 0.65 <= accuracy <= 0.95, f"Unrealistic accuracy: {accuracy:.3f}"
 
         # Verify all metrics are present
-        expected_metrics = ["test_accuracy", "test_precision", "test_recall", "test_f1"]
+        expected_metrics = [
+            "test_accuracy",
+            "test_precision",
+            "test_recall",
+            "test_f1",
+        ]
         for metric in expected_metrics:
             assert metric in metrics
             assert 0.0 <= metrics[metric] <= 1.0
@@ -294,7 +304,6 @@ class TestRealisticAutoML:
             sampling_strategy="auto",
         )
 
-        original_shape = X_train.shape
         automl.fit(X_train, y_train)
 
         # Verify preprocessing worked
@@ -313,7 +322,7 @@ class TestRealisticAutoML:
         assert "encoding_method" in info
         assert "feature_engineering_enabled" in info
         assert "feature_selection_enabled" in info
-        assert info["preprocessing_fitted"] == True
+        assert info["preprocessing_fitted"] is True
 
 
 class TestPerformanceBenchmarks:

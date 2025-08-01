@@ -118,7 +118,7 @@ print_success "Code quality checks passed"
 
 # Step 4: Build the package
 print_status "Building the package..."
-if ! python -m build; then
+if ! uv run python -m build; then
     print_error "Package build failed"
     exit 1
 fi
@@ -126,7 +126,7 @@ print_success "Package built successfully"
 
 # Step 5: Check the built package
 print_status "Checking the built package..."
-if ! python -m twine check dist/*; then
+if ! uv run python -m twine check dist/*; then
     print_error "Package check failed"
     exit 1
 fi
@@ -144,7 +144,7 @@ print_status "Uploading to PyPI..."
 
 if [ "$UPLOAD_TEST" = true ]; then
     print_warning "Uploading to Test PyPI..."
-    if ! python -m twine upload --repository testpypi dist/*; then
+    if ! uv run python -m twine upload --repository testpypi dist/*; then
         print_error "Upload to Test PyPI failed"
         exit 1
     fi
@@ -156,7 +156,7 @@ else
     echo "This will upload to the real PyPI. Are you sure? (y/N)"
     read -r response
     if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        if ! python -m twine upload dist/*; then
+        if ! uv run python -m twine upload dist/*; then
             print_error "Upload to PyPI failed"
             exit 1
         fi

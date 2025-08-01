@@ -83,12 +83,26 @@ class NativeSampler:
         elif self.strategy == "undersample":
             return self._undersample_majority(X, y)
 
+        elif self.strategy == "smote":
+            # Use oversample as SMOTE alternative
+            return self._oversample_minority(X, y)
+
+        elif self.strategy == "random_undersample":
+            # Use undersample as random undersample
+            return self._undersample_majority(X, y)
+
         elif self.strategy == "balanced":
             return self._balanced_sampling(X, y)
 
+        elif self.strategy == "none":
+            return X.copy(), y.copy()  # No sampling applied
+
         else:
-            warnings.warn(f"Unknown strategy '{self.strategy}'. No sampling applied.")
-            return X.copy(), y.copy()
+            raise ValueError(
+                f"Unknown strategy '{self.strategy}'. Valid strategies are: "
+                "'auto', 'oversample', 'undersample', 'smote', "
+                "'random_undersample', 'balanced', 'none'."
+            )
 
     def _oversample_minority(
         self, X: pd.DataFrame, y: pd.Series
