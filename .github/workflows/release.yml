@@ -4,13 +4,17 @@ on:
   push:
     tags:
       - "v*"
-  # Manual trigger for testing
+  # Manual trigger for testing releases
   workflow_dispatch:
     inputs:
-      test_pypi:
-        description: 'Deploy to Test PyPI instead of PyPI'
+      version:
+        description: 'Version to release (e.g., 0.1.0)'
+        required: true
+        type: string
+      test_only:
+        description: 'Test PyPI only (uncheck for production PyPI)'
         required: false
-        default: false
+        default: true
         type: boolean
 
 permissions:
@@ -41,6 +45,28 @@ jobs:
 
     - name: Create and sync environment
       run: uv sync --extra dev
+
+    # Create tag for manual releases
+    - name: Create and push tag (manual releases only)
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        VERSION="v${{ github.event.inputs.version }}"
+        echo "Creating tag: $VERSION"
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+        # Check if tag already exists
+        if git rev-parse "$VERSION" >/dev/null 2>&1; then
+          echo "⚠️  Tag $VERSION already exists!"
+          echo "Available options:"
+          echo "1. Use a different version number"
+          echo "2. Delete the existing tag first: git push --delete origin $VERSION"
+          exit 1
+        fi
+
+        git tag -a "$VERSION" -m "Release $VERSION"
+        git push origin "$VERSION"
+        echo "✅ Created and pushed tag: $VERSION"
 
     - name: Cache uv
       uses: actions/cache@v4
@@ -79,7 +105,9 @@ jobs:
     name: Publish to Test PyPI
     runs-on: ubuntu-latest
     needs: build
-    if: github.event.inputs.test_pypi == 'true' || contains(github.ref, 'test')
+    if: |
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.test_only == 'true') ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v0.'))
 
     steps:
     - name: Checkout code
@@ -102,14 +130,31 @@ jobs:
     - name: Publish to Test PyPI
       env:
         UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
-      run: uv publish --publish-url https://test.pypi.org/legacy/
+      run: |
+        echo "🧪 Publishing to Test PyPI..."
+        echo "Version: $(ls dist/*.whl | head -1 | sed 's/.*-\([0-9.]*\)-.*/\1/')"
+
+        if [ -z "$UV_PUBLISH_TOKEN" ]; then
+          echo "⚠️  TEST_PYPI_API_TOKEN secret not found!"
+          echo "📋 To enable Test PyPI publishing:"
+          echo "   1. Go to test.pypi.org and create an API token"
+          echo "   2. Add it as TEST_PYPI_API_TOKEN secret in GitHub repo settings"
+          echo "   3. Re-run this workflow"
+          echo ""
+          echo "🎉 Package is built and ready - check the artifacts!"
+          exit 0
+        fi
+
+        uv publish --publish-url https://test.pypi.org/legacy/
 
   # Publish to PyPI (production)
   publish-pypi:
     name: Publish to PyPI
     runs-on: ubuntu-latest
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v') && github.event.inputs.test_pypi != 'true'
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && !startsWith(github.ref, 'refs/tags/v0.')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.test_only != 'true')
 
     steps:
     - name: Checkout code
@@ -132,14 +177,31 @@ jobs:
     - name: Publish to PyPI
       env:
         UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-      run: uv publish
+      run: |
+        echo "🚀 Publishing to PyPI (production)..."
+        echo "Version: $(ls dist/*.whl | head -1 | sed 's/.*-\([0-9.]*\)-.*/\1/')"
+
+        if [ -z "$UV_PUBLISH_TOKEN" ]; then
+          echo "⚠️  PYPI_API_TOKEN secret not found!"
+          echo "📋 To enable PyPI publishing:"
+          echo "   1. Go to PyPI.org and create an API token"
+          echo "   2. Add it as PYPI_API_TOKEN secret in GitHub repo settings"
+          echo "   3. Re-run this workflow"
+          echo ""
+          echo "🎉 Package is built and ready - check the artifacts!"
+          exit 0
+        fi
+
+        uv publish
 
   # Create GitHub Release
   github-release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    needs: [build, publish-pypi]
-    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build]
+    if: |
+      startsWith(github.ref, 'refs/tags/v') ||
+      github.event_name == 'workflow_dispatch'
 
     steps:
     - name: Checkout code
@@ -153,14 +215,32 @@ jobs:
         name: python-package-distributions
         path: dist/
 
-    - name: Extract version from tag
+    - name: Extract version from tag or input
       id: version
-      run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+        else
+          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        fi
 
     - name: Generate release notes
       id: release_notes
       run: |
-        echo "# YAAML v${{ steps.version.outputs.version }}" > release_notes.md
+        VERSION="${{ steps.version.outputs.version }}"
+        if [[ "$VERSION" == 0.* ]]; then
+          RELEASE_TYPE="🧪 **Test Release**"
+          INSTALL_NOTE="⚠️ This is a test release. Install from Test PyPI:"
+          INSTALL_CMD="pip install -i https://test.pypi.org/simple/ yaaml==$VERSION"
+        else
+          RELEASE_TYPE="🚀 **Production Release**"
+          INSTALL_NOTE="📦 Install from PyPI:"
+          INSTALL_CMD="pip install yaaml==$VERSION"
+        fi
+
+        echo "# YAAML v$VERSION" > release_notes.md
+        echo "" >> release_notes.md
+        echo "$RELEASE_TYPE" >> release_notes.md
         echo "" >> release_notes.md
         echo "## What's New" >> release_notes.md
         echo "- Modern AutoML package with comprehensive preprocessing" >> release_notes.md
@@ -168,8 +248,9 @@ jobs:
         echo "- Comprehensive test coverage and code quality checks" >> release_notes.md
         echo "" >> release_notes.md
         echo "## Installation" >> release_notes.md
+        echo "$INSTALL_NOTE" >> release_notes.md
         echo "\`\`\`bash" >> release_notes.md
-        echo "pip install yaaml==${{ steps.version.outputs.version }}" >> release_notes.md
+        echo "$INSTALL_CMD" >> release_notes.md
         echo "\`\`\`" >> release_notes.md
         echo "" >> release_notes.md
         echo "## Files" >> release_notes.md
