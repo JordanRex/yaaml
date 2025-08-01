@@ -209,6 +209,14 @@ jobs:
       with:
         fetch-depth: 0
 
+    # For manual releases, ensure we have the latest tags
+    - name: Fetch latest tags
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        git fetch --tags --force
+        echo "Available tags:"
+        git tag --list 'v*' --sort=-version:refname | head -5
+
     - name: Download distributions
       uses: actions/download-artifact@v4
       with:
@@ -259,6 +267,7 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
+        tag_name: v${{ steps.version.outputs.version }}
         name: YAAML v${{ steps.version.outputs.version }}
         body_path: release_notes.md
         files: dist/*
