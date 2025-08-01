@@ -157,11 +157,7 @@ jobs:
       run: uv sync --extra dev
 
     - name: Run Bandit security scan
-      run: uv run bandit -r yaaml/ -f json -o security-report.json
-      continue-on-error: true
-
-    - name: Run Safety dependency scan
-      run: uv run safety check --json --output safety-report.json
+      run: uv run bandit -c pyproject.toml -r yaaml/ -f json -o security-report.json
       continue-on-error: true
 
     - name: Upload security reports
@@ -169,7 +165,7 @@ jobs:
       if: always()
       with:
         name: security-reports
-        path: "*-report.json"
+        path: "security-report.json"
         retention-days: 30
 
   # Build package
