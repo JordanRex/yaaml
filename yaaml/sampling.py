@@ -54,7 +54,7 @@ class NativeSampler:
         self.class_counts = y.value_counts().sort_index()
 
         if len(self.class_counts) < 2:
-            warnings.warn("Only one class found. No sampling applied.")
+            warnings.warn("Only one class found. No sampling applied.", stacklevel=2)
             return X.copy(), y.copy()
 
         # Determine if dataset is imbalanced

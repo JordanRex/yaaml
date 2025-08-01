@@ -2,6 +2,8 @@
 Unit tests for missing value imputation module
 """
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,7 +15,7 @@ class TestDataFrameImputer:
     """Test cases for DataFrameImputer"""
 
     @pytest.fixture
-    def sample_data_with_missing(self):
+    def sample_data_with_missing(self) -> Any:
         """Create sample data with missing values"""
         np.random.seed(42)
         data = pd.DataFrame(
@@ -26,19 +28,19 @@ class TestDataFrameImputer:
         )
         return data
 
-    def test_init_default(self):
+    def test_init_default(self) -> None:
         """Test initialization with default parameters"""
         imputer = DataFrameImputer()
         assert imputer.strategy == "mean"
         assert imputer.num_imputer is None
         assert imputer.cat_imputer is None
 
-    def test_init_custom_strategy(self):
+    def test_init_custom_strategy(self) -> None:
         """Test initialization with custom strategy"""
         imputer = DataFrameImputer(strategy="median")
         assert imputer.strategy == "median"
 
-    def test_fit(self, sample_data_with_missing):
+    def test_fit(self, sample_data_with_missing: Any) -> None:
         """Test fitting the imputer"""
         imputer = DataFrameImputer()
         imputer.fit(sample_data_with_missing)
@@ -51,7 +53,7 @@ class TestDataFrameImputer:
             and len(imputer.categorical_columns) == 2
         )
 
-    def test_transform(self, sample_data_with_missing):
+    def test_transform(self, sample_data_with_missing: Any) -> None:
         """Test transforming data"""
         imputer = DataFrameImputer()
         imputer.fit(sample_data_with_missing)
@@ -65,7 +67,7 @@ class TestDataFrameImputer:
         # Check that no NaN values remain
         assert not result.isnull().any().any()
 
-    def test_fit_transform(self, sample_data_with_missing):
+    def test_fit_transform(self, sample_data_with_missing: Any) -> None:
         """Test fit_transform method"""
         imputer = DataFrameImputer()
         result = imputer.fit_transform(sample_data_with_missing)
@@ -75,7 +77,7 @@ class TestDataFrameImputer:
         assert result.shape == sample_data_with_missing.shape
         assert not result.isnull().any().any()
 
-    def test_knn_imputation(self, sample_data_with_missing):
+    def test_knn_imputation(self, sample_data_with_missing: Any) -> None:
         """Test KNN imputation"""
         imputer = DataFrameImputer(strategy="knn")
         result = imputer.fit_transform(sample_data_with_missing)
@@ -84,7 +86,7 @@ class TestDataFrameImputer:
         assert isinstance(result, pd.DataFrame)
         assert result.shape == sample_data_with_missing.shape
 
-    def test_iterative_imputation(self, sample_data_with_missing):
+    def test_iterative_imputation(self, sample_data_with_missing: Any) -> None:
         """Test Iterative imputation"""
         imputer = DataFrameImputer(strategy="iterative")
         result = imputer.fit_transform(sample_data_with_missing)
@@ -93,7 +95,7 @@ class TestDataFrameImputer:
         assert isinstance(result, pd.DataFrame)
         assert result.shape == sample_data_with_missing.shape
 
-    def test_most_frequent_strategy(self, sample_data_with_missing):
+    def test_most_frequent_strategy(self, sample_data_with_missing: Any) -> None:
         """Test most frequent strategy"""
         imputer = DataFrameImputer(strategy="most_frequent")
         result = imputer.fit_transform(sample_data_with_missing)
@@ -101,7 +103,7 @@ class TestDataFrameImputer:
         assert result is not None
         assert isinstance(result, pd.DataFrame)
 
-    def test_no_missing_data(self):
+    def test_no_missing_data(self) -> None:
         """Test behavior with no missing data"""
         data = pd.DataFrame(
             {"col1": [1, 2, 3, 4, 5], "col2": ["A", "B", "C", "D", "E"]}
@@ -113,7 +115,7 @@ class TestDataFrameImputer:
         assert result is not None
         assert result.shape == data.shape
 
-    def test_only_numeric_data(self):
+    def test_only_numeric_data(self) -> None:
         """Test with only numeric data"""
         data = pd.DataFrame(
             {
@@ -128,7 +130,7 @@ class TestDataFrameImputer:
         assert result is not None
         assert not result.isnull().any().any()
 
-    def test_only_categorical_data(self):
+    def test_only_categorical_data(self) -> None:
         """Test with only categorical data"""
         data = pd.DataFrame(
             {"col1": ["A", "B", np.nan, "C"], "col2": ["X", np.nan, "Z", "W"]}
@@ -140,7 +142,7 @@ class TestDataFrameImputer:
         assert result is not None
         assert result.shape == data.shape
 
-    def test_different_strategies(self, sample_data_with_missing):
+    def test_different_strategies(self, sample_data_with_missing: Any) -> None:
         """Test different imputation strategies"""
         strategies = ["mean", "median", "most_frequent"]
 

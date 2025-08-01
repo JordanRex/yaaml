@@ -10,7 +10,9 @@ from sklearn.model_selection import train_test_split
 
 
 @pytest.fixture
-def sample_classification_data():
+def sample_classification_data() -> (
+    tuple[pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray]
+):
     """Generate sample classification dataset"""
     X, y = make_classification(
         n_samples=500,
@@ -32,7 +34,9 @@ def sample_classification_data():
 
 
 @pytest.fixture
-def sample_regression_data():
+def sample_regression_data() -> (
+    tuple[pd.DataFrame, pd.DataFrame, np.ndarray, np.ndarray]
+):
     """Generate sample regression dataset"""
     X, y = make_regression(
         n_samples=500,
@@ -53,7 +57,9 @@ def sample_regression_data():
 
 
 @pytest.fixture
-def sample_categorical_data():
+def sample_categorical_data() -> (
+    tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]
+):
     """Generate sample dataset with categorical features"""
     np.random.seed(42)
 
@@ -80,7 +86,7 @@ def sample_categorical_data():
 
 
 @pytest.fixture
-def sample_missing_data():
+def sample_missing_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     """Generate sample dataset with missing values"""
     np.random.seed(42)
 

@@ -36,7 +36,7 @@ class NativeEncoder:
         self.categorical_columns: list[str] | None = None
         self.fitted = False
 
-    def fit(self, X: pd.DataFrame) -> "NativeEncoder":
+    def fit(self, X: pd.DataFrame) -> NativeEncoder:
         """
         Fit the encoder on training data
 
@@ -163,9 +163,13 @@ class NativeEncoder:
                     known_values = set(
                         encoder.classes_[:-1]
                     )  # Exclude the __UNKNOWN__ placeholder
-                    col_values = col_values.map(
-                        lambda x: x if x in known_values else "__UNKNOWN__"
-                    )
+
+                    def _replace_unknown(
+                        x: str, known_vals: set[str] = known_values
+                    ) -> str:
+                        return x if x in known_vals else "__UNKNOWN__"
+
+                    col_values = col_values.map(_replace_unknown)
 
                 X_encoded[col] = encoder.transform(col_values)
 
@@ -224,7 +228,7 @@ class TargetEncoder:
         self.global_mean: float | None = None
         self.fitted = False
 
-    def fit(self, X: pd.DataFrame, y: pd.Series) -> "TargetEncoder":
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> TargetEncoder:
         """
         Fit the target encoder
 
@@ -258,7 +262,7 @@ class TargetEncoder:
             ) / (category_stats["count"] + self.smoothing)
 
             # Create mapping dictionary
-            encoding_map = dict(zip(category_stats[col], smoothed_means))
+            encoding_map = dict(zip(category_stats[col], smoothed_means, strict=False))
             self.encodings[col] = encoding_map
 
         self.fitted = True

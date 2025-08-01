@@ -27,7 +27,7 @@ class FeatureSelector:
 
     def __init__(
         self,
-        methods: list[str] = ["variance", "univariate"],
+        methods: list[str] | None = None,
         variance_threshold: float = 0.1,
         k_best: int = 10,
         percentile: float = 50,
@@ -49,7 +49,7 @@ class FeatureSelector:
         task_type : str
             'classification' or 'regression'
         """
-        self.methods = methods
+        self.methods = methods if methods is not None else ["variance", "univariate"]
         self.variance_threshold = variance_threshold
         self.k_best = k_best
         self.percentile = percentile
@@ -63,7 +63,7 @@ class FeatureSelector:
         self.selected_features: list[str] | None = None
         self.fitted = False
 
-    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> "FeatureSelector":
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> FeatureSelector:
         """
         Fit feature selectors
 
@@ -214,8 +214,8 @@ class FeatureSelector:
         ):
             scores = self.univariate_selector.scores_
             feature_names = self.univariate_selector.feature_names_in_
-            for i, (name, score) in enumerate(
-                zip(np.asarray(feature_names), np.asarray(scores))
+            for _i, (name, score) in enumerate(
+                zip(np.asarray(feature_names), np.asarray(scores), strict=False)
             ):
                 importance_data.append(
                     {"feature": name, "method": "univariate", "score": float(score)}
@@ -225,7 +225,7 @@ class FeatureSelector:
         if self.rfe_selector is not None:
             rankings = self.rfe_selector.ranking_
             feature_names = self.rfe_selector.feature_names_in_
-            for name, rank in zip(feature_names, rankings):
+            for name, rank in zip(feature_names, rankings, strict=False):
                 importance_data.append(
                     {
                         "feature": name,
@@ -245,7 +245,7 @@ def select_features(
     train_df: pd.DataFrame,
     valid_df: pd.DataFrame | None = None,
     target: pd.Series | None = None,
-    methods: list[str] = ["variance", "univariate"],
+    methods: list[str] | None = None,
     k_best: int = 10,
     task_type: str = "classification",
 ) -> pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]:
@@ -272,6 +272,10 @@ def select_features(
     pd.DataFrame or tuple
         Selected features
     """
+    # Initialize default methods if None provided
+    if methods is None:
+        methods = ["variance", "univariate"]
+
     selector = FeatureSelector(methods=methods, k_best=k_best, task_type=task_type)
 
     train_selected = selector.fit_transform(train_df, target)

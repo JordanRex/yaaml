@@ -21,7 +21,7 @@ class FeatureEngineering:
 
     def __init__(
         self,
-        decomposition_methods: list[str] = ["pca"],
+        decomposition_methods: list[str] | None = None,
         n_components: int | float = 0.95,
         clustering_features: bool = True,
         polynomial_features: bool = False,
@@ -46,7 +46,9 @@ class FeatureEngineering:
         scaling_method : str
             Scaling method: 'standard', 'minmax', 'none'
         """
-        self.decomposition_methods = decomposition_methods
+        self.decomposition_methods = (
+            decomposition_methods if decomposition_methods is not None else ["pca"]
+        )
         self.n_components = n_components
         self.clustering_features = clustering_features
         self.polynomial_features = polynomial_features
@@ -61,7 +63,7 @@ class FeatureEngineering:
         self.feature_names: list[str] | None = None
         self.fitted = False
 
-    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> "FeatureEngineering":
+    def fit(self, X: pd.DataFrame, y: pd.Series | None = None) -> FeatureEngineering:
         """
         Fit feature engineering transformations
 
@@ -261,7 +263,7 @@ class BinningTransformer:
         self.bin_edges: dict[str, np.ndarray] = {}
         self.fitted = False
 
-    def fit(self, X: pd.DataFrame) -> "BinningTransformer":
+    def fit(self, X: pd.DataFrame) -> BinningTransformer:
         """
         Fit binning on numeric columns
 
@@ -324,7 +326,7 @@ def create_advanced_features(
     train_df: pd.DataFrame,
     valid_df: pd.DataFrame | None = None,
     target: pd.Series | None = None,
-    methods: list[str] = ["pca", "clustering"],
+    methods: list[str] | None = None,
     n_components: int | float = 0.95,
 ) -> pd.DataFrame | tuple[pd.DataFrame, pd.DataFrame]:
     """
@@ -348,6 +350,10 @@ def create_advanced_features(
     pd.DataFrame or tuple
         Engineered features
     """
+    # Initialize default methods if None provided
+    if methods is None:
+        methods = ["pca", "clustering"]
+
     # Setup feature engineering
     engineer = FeatureEngineering(
         decomposition_methods=methods,

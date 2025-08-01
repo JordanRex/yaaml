@@ -1,104 +1,64 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "yaaml"
 version = "0.1.0"
-authors = [{ name = "Varun Rajan", email = "varun@example.com" }]
 description = "Yet Another AutoML - A native Python AutoML library"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
+authors = [{ name = "Varun Rajan", email = "varun@example.com" }]
 classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Intended Audience :: Developers",
-    "Intended Audience :: Science/Research",
+    "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-]
-keywords = [
-    "automl",
-    "machine learning",
-    "sklearn",
-    "automated machine learning",
 ]
 dependencies = ["numpy>=2.0.0", "pandas>=2.0.0", "scikit-learn>=1.5.0"]
 
 [project.optional-dependencies]
 dev = [
-    # Testing
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    # Code quality
+    "pytest>=8.0.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.8.0",
     "mypy>=1.17.0",
-    "black>=23.0.0",
-    "isort>=5.12.0",
-    "flake8>=6.0.0",
-    # Type stubs (only what we directly import)
+    "bandit[toml]>=1.7.0",
+    "pre-commit>=4.0.0",
+    # Type stubs for mypy
+    "types-requests",
     "pandas-stubs>=2.3.0",
-    # Git hooks
-    "pre-commit>=3.3.0",
-    # Build and publish
-    "build>=1.2.0",
-    "twine>=6.0.0",
+    "types-setuptools",
 ]
-docs = [
-    "sphinx>=7.0.0",
-    "sphinx-rtd-theme>=1.3.0",
-    "sphinxcontrib-napoleon>=0.7",
-]
+docs = ["mkdocs>=1.6.0", "mkdocs-material>=9.5.0"]
 
 [project.urls]
 Homepage = "https://github.com/JordanRex/yaaml"
 Repository = "https://github.com/JordanRex/yaaml"
-Documentation = "https://yaaml.readthedocs.io"
-"Bug Tracker" = "https://github.com/JordanRex/yaaml/issues"
-
-[project.scripts]
-yaaml = "yaaml.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["yaaml*"]
-exclude = ["tests*", "docs*", "examples*"]
 
+# Testing
 [tool.pytest.ini_options]
-minversion = "6.0"
+testpaths = ["tests"]
 addopts = [
-    "-v",
-    "-ra",
-    "--strict-markers",
-    "--strict-config",
     "--cov=yaaml",
     "--cov-report=term-missing",
     "--cov-report=html:coverage/htmlcov",
     "--cov-report=xml:coverage/coverage.xml",
-]
-testpaths = ["tests"]
-markers = [
-    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-    "integration: marks tests as integration tests",
-    "unit: marks tests as unit tests",
+    "-v",
 ]
 
+# Coverage configuration
 [tool.coverage.run]
 source = ["yaaml"]
 data_file = "coverage/.coverage"
-omit = [
-    "*/tests/*",
-    "*/__pycache__/*",
-    "*/venv/*",
-    "*/env/*",
-    "setup.py",
-    "setup_dev.py",
-    "run_tests.py",
-]
+omit = ["*/tests/*", "*/__pycache__/*", "*/venv/*", "*/env/*", "*/.venv/*"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -114,68 +74,47 @@ exclude_lines = [
     "@(abc\\.)?abstractmethod",
 ]
 
-[tool.black]
+# Code quality
+[tool.ruff]
 line-length = 88
-target-version = ['py312', 'py313']
-include = '\\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \\.eggs
-  | \\.git
-  | \\.hg
-  | \\.mypy_cache
-  | \\.tox
-  | \\.venv
-  | build
-  | dist
-)/
-'''
+target-version = "py312"
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-line_length = 88
-known_first_party = ["yaaml"]
-skip_glob = ["*/.venv/*", "*/.env/*"]
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP"]
+ignore = ["E501"]
 
-[tool.flake8]
-max-line-length = 88
-extend-ignore = ["E203", "W503", "E501"]
-per-file-ignores = ["__init__.py:F401,F403", "tests/*:D100,D101,D102,D103,D104"]
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+# Apply same linting standards to all folders: yaaml/, tests/, scripts/
 
+# Type checking
 [tool.mypy]
 python_version = "3.12"
 strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_no_return = true
-warn_unreachable = true
-strict_equality = true
 ignore_missing_imports = true
 
-# Exclude irrelevant directories (use glob patterns)
+# Files and paths
+files = ["yaaml", "tests", "scripts"]
 exclude = [
-    "^build/.*",
-    "^dist/.*",
-    "^venv/.*",
-    "^\\.venv/.*",
-    "^env/.*",
-    "^\\.env/.*",
-    "^coverage/.*",
-    "^\\.coverage.*",
-    "^\\.mypy_cache/.*",
-    "^\\.pytest_cache/.*",
+    "^build/",
+    "^dist/",
+    "^coverage/",
+    "^\\.venv/",
+    "^\\.env/",
+    "^\\.mypy_cache/",
+    "^\\.pytest_cache/",
 ]
 
-[[tool.mypy.overrides]]
-module = ["tests.*"]
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
+# Enable recursive discovery
+namespace_packages = true
+explicit_package_bases = true
+
+# Security linting
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "venv", "env", ".env"]
+# B101: assert_used (excluded by default)
+# B110: try_except_pass - intentional fallbacks for optional metrics
+# B404: import subprocess - legitimate in development scripts
+# B603: subprocess_without_shell_equals_true - safe subprocess calls
+# B607: start_process_with_partial_path - safe git/uv commands
+skips = ["B101", "B110", "B404", "B603", "B607"]

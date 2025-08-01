@@ -5,7 +5,7 @@
 ```bash
 git clone https://github.com/JordanRex/yaaml.git
 cd yaaml
-python scripts/setup_dev.py
+uv run python scripts/setup_dev.py
 ```
 
 ## Project Structure
@@ -22,11 +22,11 @@ yaaml/
 
 ```bash
 # Run quick tests
-python scripts/run_tests.py --fast
+uv run python scripts/run_tests.py --fast
 
 # Before committing
-python scripts/run_tests.py --coverage
-python scripts/check_project.py
+uv run python scripts/run_tests.py --coverage
+uv run python scripts/check_project.py
 ```
 
 ## Dependencies
@@ -47,9 +47,8 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0", "pytest-cov>=4.1.0",
-    "mypy>=1.17.0", "black>=23.0.0", "isort>=5.12.0", "flake8>=6.0.0",
+    "mypy>=1.17.0", "ruff>=0.8.0",
     "pandas-stubs>=2.3.0", "pre-commit>=3.3.0",
-    "build>=1.2.0", "twine>=6.0.0",
 ]
 ```
 
@@ -73,29 +72,26 @@ uv sync --all-extras
 
 ```bash
 # All tests
-python scripts/run_tests.py
+uv run python scripts/run_tests.py
 
 # With coverage
-python scripts/run_tests.py --coverage
+uv run python scripts/run_tests.py --coverage
 
 # Specific tests
-python scripts/run_tests.py tests/test_main.py
+uv run python scripts/run_tests.py tests/test_main.py
 
 # Fast tests only
-python scripts/run_tests.py --fast
+uv run python scripts/run_tests.py --fast
 ```
 
 ## Code Quality
 
 ```bash
 # Format code
-uv run black yaaml tests
+uv run ruff format yaaml tests
 
-# Sort imports
-uv run isort yaaml tests
-
-# Lint
-uv run flake8 yaaml
+# Lint and auto-fix
+uv run ruff check yaaml --fix
 
 # Type check
 uv run mypy yaaml/
@@ -104,20 +100,17 @@ uv run mypy yaaml/
 pre-commit run --all-files
 ```
 
-## Building
+## Building & Publishing
 
 ```bash
 # Build package
 uv build
 
-# Check package
-uv run twine check dist/*
+# Publish to Test PyPI
+uv publish --publish-url https://test.pypi.org/legacy/
 
-# Test PyPI upload
-uv run twine upload --repository testpypi dist/*
-
-# Production PyPI upload
-uv run twine upload dist/*
+# Publish to PyPI (production)
+uv publish
 ```
 
 ## MyPy Configuration

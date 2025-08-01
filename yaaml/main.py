@@ -144,7 +144,7 @@ class YAAMLAutoML:
         y: pd.Series | np.ndarray,
         X_valid: pd.DataFrame | None = None,
         y_valid: pd.Series | np.ndarray | None = None,
-    ) -> "YAAMLAutoML":
+    ) -> YAAMLAutoML:
         """
         Fit the complete AutoML pipeline to training data.
 

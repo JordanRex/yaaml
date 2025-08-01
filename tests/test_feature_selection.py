@@ -18,7 +18,7 @@ from yaaml.feature_selection import FeatureSelector, select_features
 class TestFeatureSelector:
     """Test FeatureSelector class"""
 
-    def test_init_default(self):
+    def test_init_default(self) -> None:
         """Test FeatureSelector initialization with defaults"""
         selector = FeatureSelector()
         assert selector.methods == ["variance", "univariate"]
@@ -27,7 +27,7 @@ class TestFeatureSelector:
         assert selector.percentile == 50
         assert selector.task_type == "classification"
 
-    def test_init_custom_params(self):
+    def test_init_custom_params(self) -> None:
         """Test FeatureSelector initialization with custom parameters"""
         selector = FeatureSelector(
             methods=["variance", "mutual_info"],
@@ -42,7 +42,7 @@ class TestFeatureSelector:
         assert selector.percentile == 25
         assert selector.task_type == "regression"
 
-    def test_variance_selection(self):
+    def test_variance_selection(self) -> None:
         """Test variance-based feature selection"""
         # Create data with some low-variance features
         np.random.seed(42)
@@ -63,7 +63,7 @@ class TestFeatureSelector:
         assert "zero_var" not in X_selected.columns
         assert "low_var" not in X_selected.columns
 
-    def test_univariate_selection_classification(self):
+    def test_univariate_selection_classification(self) -> None:
         """Test univariate feature selection for classification"""
         X, y = make_classification(
             n_samples=200, n_features=15, n_informative=5, random_state=42
@@ -80,7 +80,7 @@ class TestFeatureSelector:
         assert X_selected.shape[0] == X_df.shape[0]
         assert hasattr(selector, "selected_features")
 
-    def test_univariate_selection_regression(self):
+    def test_univariate_selection_regression(self) -> None:
         """Test univariate feature selection for regression"""
         X, y = make_regression(
             n_samples=200, n_features=15, n_informative=5, random_state=42
@@ -96,7 +96,7 @@ class TestFeatureSelector:
         assert X_selected.shape[1] == 5
         assert X_selected.shape[0] == X_df.shape[0]
 
-    def test_mutual_info_selection(self):
+    def test_mutual_info_selection(self) -> None:
         """Test mutual information feature selection"""
         X, y = make_classification(
             n_samples=200, n_features=10, n_informative=5, random_state=42
@@ -113,7 +113,7 @@ class TestFeatureSelector:
         expected_features = max(1, int(X_df.shape[1] * 0.5))
         assert X_selected.shape[1] <= expected_features + 1  # Allow small variance
 
-    def test_rfe_selection(self):
+    def test_rfe_selection(self) -> None:
         """Test recursive feature elimination"""
         X, y = make_classification(
             n_samples=100, n_features=8, n_informative=4, random_state=42
@@ -128,7 +128,7 @@ class TestFeatureSelector:
         assert X_selected.shape[1] <= X_df.shape[1]
         assert X_selected.shape[0] == X_df.shape[0]
 
-    def test_combined_methods(self):
+    def test_combined_methods(self) -> None:
         """Test combining multiple selection methods"""
         X, y = make_classification(
             n_samples=150, n_features=20, n_informative=8, random_state=42
@@ -149,7 +149,7 @@ class TestFeatureSelector:
         assert X_selected.shape[1] < X_df.shape[1]
         assert X_selected.shape[0] == X_df.shape[0]
 
-    def test_fit_transform_consistency(self):
+    def test_fit_transform_consistency(self) -> None:
         """Test that fit + transform gives same result as fit_transform"""
         X, y = make_classification(
             n_samples=100, n_features=8, n_informative=4, random_state=42
@@ -169,7 +169,7 @@ class TestFeatureSelector:
 
         pd.testing.assert_frame_equal(X_selected1, X_selected2)
 
-    def test_transform_before_fit_error(self):
+    def test_transform_before_fit_error(self) -> None:
         """Test error when transform is called before fit"""
         X, y = make_classification(n_samples=50, n_features=5, random_state=42)
         X_df = pd.DataFrame(X, columns=[f"f_{i}" for i in range(X.shape[1])])
@@ -178,7 +178,7 @@ class TestFeatureSelector:
         with pytest.raises(ValueError, match="must be fitted before transform"):
             selector.transform(X_df)
 
-    def test_unsupervised_methods_without_target(self):
+    def test_unsupervised_methods_without_target(self) -> None:
         """Test that variance method works without target"""
         X, _ = make_classification(n_samples=100, n_features=10, random_state=42)
         X_df = pd.DataFrame(X, columns=[f"f_{i}" for i in range(X.shape[1])])
@@ -193,7 +193,7 @@ class TestFeatureSelector:
 class TestSelectFeaturesFunction:
     """Test select_features convenience function"""
 
-    def test_select_features_basic(self):
+    def test_select_features_basic(self) -> None:
         """Test basic functionality of select_features function"""
         X, y = make_classification(
             n_samples=100, n_features=10, n_informative=5, random_state=42
@@ -209,7 +209,7 @@ class TestSelectFeaturesFunction:
         assert X_selected.shape[1] == 5
         assert X_selected.shape[0] == X_df.shape[0]
 
-    def test_select_features_with_validation(self):
+    def test_select_features_with_validation(self) -> None:
         """Test select_features with validation set"""
         X, y = make_classification(
             n_samples=200, n_features=10, n_informative=5, random_state=42
@@ -232,7 +232,7 @@ class TestSelectFeaturesFunction:
         assert valid_selected.shape[1] == 5
         assert train_selected.columns.tolist() == valid_selected.columns.tolist()
 
-    def test_select_features_regression(self):
+    def test_select_features_regression(self) -> None:
         """Test select_features with regression task"""
         X, y = make_regression(
             n_samples=100, n_features=8, n_informative=4, random_state=42
@@ -256,7 +256,7 @@ class TestSelectFeaturesFunction:
 class TestFeatureSelectionEdgeCases:
     """Test edge cases and error conditions"""
 
-    def test_more_features_than_available(self):
+    def test_more_features_than_available(self) -> None:
         """Test when requesting more features than available"""
         X, y = make_classification(n_samples=50, n_features=5, random_state=42)
         X_df = pd.DataFrame(X, columns=[f"f_{i}" for i in range(X.shape[1])])
@@ -268,7 +268,7 @@ class TestFeatureSelectionEdgeCases:
         # Should return all available features (k_best is automatically limited)
         assert X_selected.shape[1] == X_df.shape[1]
 
-    def test_empty_dataframe(self):
+    def test_empty_dataframe(self) -> None:
         """Test behavior with empty DataFrame"""
         X_df = pd.DataFrame()
         y_series = pd.Series([])
@@ -277,7 +277,7 @@ class TestFeatureSelectionEdgeCases:
         with pytest.raises((ValueError, IndexError)):
             selector.fit_transform(X_df, y_series)
 
-    def test_single_feature(self):
+    def test_single_feature(self) -> None:
         """Test with single feature DataFrame"""
         X, y = make_classification(
             n_samples=50,
@@ -298,7 +298,7 @@ class TestFeatureSelectionEdgeCases:
         # Verify selected feature is one of the original features
         assert X_selected.columns[0] in X_df.columns
 
-    def test_supervised_methods_without_target(self):
+    def test_supervised_methods_without_target(self) -> None:
         """Test that supervised methods fail gracefully without target"""
         X, _ = make_classification(n_samples=50, n_features=5, random_state=42)
         X_df = pd.DataFrame(X, columns=[f"f_{i}" for i in range(X.shape[1])])

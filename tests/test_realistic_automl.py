@@ -9,6 +9,8 @@ realistic performance expectations.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -22,7 +24,7 @@ class TestRealisticAutoML:
     """Test AutoML with realistic, challenging datasets"""
 
     @pytest.fixture
-    def realistic_classification_data(self):
+    def realistic_classification_data(self) -> Any:
         """Create a realistic classification dataset with mixed data types"""
         np.random.seed(42)
 
@@ -59,7 +61,7 @@ class TestRealisticAutoML:
         return df, target
 
     @pytest.fixture
-    def challenging_classification_data(self):
+    def challenging_classification_data(self) -> Any:
         """Create a very challenging classification dataset"""
         np.random.seed(123)
 
@@ -111,7 +113,7 @@ class TestRealisticAutoML:
         return df, target
 
     @pytest.fixture
-    def realistic_regression_data(self):
+    def realistic_regression_data(self) -> Any:
         """Create a realistic regression dataset"""
         np.random.seed(42)
 
@@ -122,9 +124,7 @@ class TestRealisticAutoML:
             n_informative=4,
             noise=0.2,
             random_state=42,
-        )[
-            :2
-        ]  # Only take X and y, not coef
+        )[:2]  # Only take X and y, not coef
 
         df = pd.DataFrame(X, columns=[f"feature_{i}" for i in range(X.shape[1])])
 
@@ -140,7 +140,9 @@ class TestRealisticAutoML:
 
         return df, target
 
-    def test_realistic_classification_pipeline(self, realistic_classification_data):
+    def test_realistic_classification_pipeline(
+        self, realistic_classification_data: Any
+    ) -> None:
         """Test full AutoML pipeline on realistic classification data"""
         X, y = realistic_classification_data
 
@@ -189,7 +191,9 @@ class TestRealisticAutoML:
             assert metric in metrics
             assert 0.0 <= metrics[metric] <= 1.0
 
-    def test_challenging_classification_dataset(self, challenging_classification_data):
+    def test_challenging_classification_dataset(
+        self, challenging_classification_data: Any
+    ) -> None:
         """Test AutoML on very challenging dataset"""
         X, y = challenging_classification_data
 
@@ -220,9 +224,11 @@ class TestRealisticAutoML:
 
         # But should still produce valid predictions
         assert len(predictions) == len(X_test)
-        assert all(isinstance(pred, (int, np.integer)) for pred in predictions)
+        assert all(isinstance(pred, int | np.integer) for pred in predictions)
 
-    def test_realistic_regression_pipeline(self, realistic_regression_data):
+    def test_realistic_regression_pipeline(
+        self, realistic_regression_data: Any
+    ) -> None:
         """Test full AutoML pipeline on realistic regression data"""
         X, y = realistic_regression_data
 
@@ -239,7 +245,7 @@ class TestRealisticAutoML:
         # Verify regression-specific behavior
         assert automl.model is not None
         assert len(predictions) == len(X_test)
-        assert all(isinstance(pred, (float, np.floating)) for pred in predictions)
+        assert all(isinstance(pred, float | np.floating) for pred in predictions)
 
         # Verify regression metrics
         expected_metrics = ["test_r2", "test_mse", "test_mae", "test_rmse"]
@@ -250,7 +256,7 @@ class TestRealisticAutoML:
         r2 = metrics["test_r2"]
         assert -0.5 <= r2 <= 1.0, f"Unreasonable R² score: {r2:.3f}"
 
-    def test_small_dataset_handling(self):
+    def test_small_dataset_handling(self) -> None:
         """Test AutoML behavior with small datasets"""
         # Very small dataset
         np.random.seed(42)
@@ -282,7 +288,9 @@ class TestRealisticAutoML:
         assert len(predictions) == len(X_test)
         assert "test_accuracy" in metrics
 
-    def test_all_preprocessing_modules_integration(self, realistic_classification_data):
+    def test_all_preprocessing_modules_integration(
+        self, realistic_classification_data: Any
+    ) -> None:
         """Test that all preprocessing modules work together"""
         X, y = realistic_classification_data
 
@@ -328,7 +336,7 @@ class TestRealisticAutoML:
 class TestPerformanceBenchmarks:
     """Performance and timing tests"""
 
-    def test_automl_training_time(self):
+    def test_automl_training_time(self) -> None:
         """Test that AutoML completes training in reasonable time"""
         import time
 

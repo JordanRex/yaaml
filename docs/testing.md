@@ -43,7 +43,7 @@ pre-commit run --all-files
 
 # Specific hook
 pre-commit run mypy --all-files
-pre-commit run black --all-files
+pre-commit run ruff-format --all-files
 
 # Install hooks
 pre-commit install

@@ -2,6 +2,8 @@
 Unit tests for encoding module
 """
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,7 +14,7 @@ from yaaml.encoding import NativeEncoder, TargetEncoder, encode_categorical_feat
 
 
 @pytest.fixture
-def sample_data():
+def sample_data() -> Any:
     """Create sample data with categorical features."""
     # Create numeric data
     X, y = make_classification(
@@ -27,13 +29,14 @@ def sample_data():
 
     y_series = pd.Series(y, name="target")
 
-    return train_test_split(X_df, y_series, test_size=0.3, random_state=42)
+    result = train_test_split(X_df, y_series, test_size=0.3, random_state=42)
+    return result
 
 
 class TestNativeEncoder:
     """Test cases for NativeEncoder class."""
 
-    def test_ordinal_encoding(self, sample_data):
+    def test_ordinal_encoding(self, sample_data: Any) -> None:
         """Test ordinal encoding."""
         X_train, X_test, y_train, y_test = sample_data
 
@@ -55,7 +58,7 @@ class TestNativeEncoder:
                 X_encoded[col].dtype == X_train[col].dtype
             ), f"Numeric column {col} should be unchanged"
 
-    def test_onehot_encoding(self, sample_data):
+    def test_onehot_encoding(self, sample_data: Any) -> None:
         """Test one-hot encoding."""
         X_train, X_test, y_train, y_test = sample_data
 
@@ -78,7 +81,7 @@ class TestNativeEncoder:
                 val in [0, 1] for val in unique_vals
             ), f"One-hot column {col} should only contain 0 and 1"
 
-    def test_fit_transform(self, sample_data):
+    def test_fit_transform(self, sample_data: Any) -> None:
         """Test fit_transform method."""
         X_train, X_test, y_train, y_test = sample_data
 
@@ -95,7 +98,7 @@ class TestNativeEncoder:
 class TestTargetEncoder:
     """Test cases for TargetEncoder class."""
 
-    def test_target_encoding(self, sample_data):
+    def test_target_encoding(self, sample_data: Any) -> None:
         """Test target encoding."""
         X_train, X_test, y_train, y_test = sample_data
 
@@ -118,7 +121,7 @@ class TestTargetEncoder:
                 X_encoded[col].dtype == X_train[col].dtype
             ), f"Numeric column {col} should be unchanged"
 
-    def test_fit_transform(self, sample_data):
+    def test_fit_transform(self, sample_data: Any) -> None:
         """Test fit_transform method."""
         X_train, X_test, y_train, y_test = sample_data
 
@@ -135,7 +138,7 @@ class TestTargetEncoder:
 class TestEncodeCategoricalFeatures:
     """Test cases for encode_categorical_features function."""
 
-    def test_encode_categorical_features_ordinal(self, sample_data):
+    def test_encode_categorical_features_ordinal(self, sample_data: Any) -> None:
         """Test the main encoding function with ordinal encoding."""
         X_train, X_test, y_train, y_test = sample_data
 
@@ -152,7 +155,7 @@ class TestEncodeCategoricalFeatures:
         assert X_train_enc.shape[0] == X_train.shape[0]
         assert X_test_enc.shape[0] == X_test.shape[0]
 
-    def test_encode_categorical_features_target(self, sample_data):
+    def test_encode_categorical_features_target(self, sample_data: Any) -> None:
         """Test the main encoding function with target encoding."""
         X_train, X_test, y_train, y_test = sample_data
 
@@ -169,7 +172,7 @@ class TestEncodeCategoricalFeatures:
         assert X_train_enc.shape[0] == X_train.shape[0]
         assert X_test_enc.shape[0] == X_test.shape[0]
 
-    def test_invalid_encoding_method(self, sample_data):
+    def test_invalid_encoding_method(self, sample_data: Any) -> None:
         """Test error handling for invalid encoding method."""
         X_train, X_test, y_train, y_test = sample_data
 

@@ -82,7 +82,7 @@ def main() -> None:
     print("\n📋 Common commands:")
     print("   uv run pytest          # Run tests")
     print("   uv run mypy yaaml       # Type checking")
-    print("   uv run black yaaml      # Format code")
+    print("   uv run ruff format yaaml # Format code")
     print("   uv run pre-commit run --all-files  # All checks")
 
 

@@ -140,8 +140,7 @@ def check_dependencies() -> bool:
     ]
 
     optional_tools = [
-        ("black", "Code formatter"),
-        ("flake8", "Linter"),
+        ("ruff", "Linter and formatter"),
         ("pytest", "Test runner"),
         ("pre-commit", "Pre-commit hooks"),
     ]

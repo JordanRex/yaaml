@@ -32,7 +32,7 @@ class DataFrameImputer:
         self.categorical_columns: list[str] | None = None
         self.fitted = False
 
-    def fit(self, X: pd.DataFrame) -> "DataFrameImputer":
+    def fit(self, X: pd.DataFrame) -> DataFrameImputer:
         """
         Fit the imputer on training data
 

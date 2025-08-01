@@ -18,7 +18,7 @@ from yaaml.helper_funcs import check_data_quality, detect_data_types, evaluate_m
 class TestDetectDataTypes:
     """Test detect_data_types function"""
 
-    def test_mixed_data_types(self):
+    def test_mixed_data_types(self) -> None:
         """Test detection of mixed data types"""
         df = pd.DataFrame(
             {
@@ -44,7 +44,7 @@ class TestDetectDataTypes:
         assert "numeric_int" in numeric_cols or "numeric_int" in categorical_cols
         assert "numeric_float" in numeric_cols or "numeric_float" in categorical_cols
 
-    def test_all_numeric_data(self):
+    def test_all_numeric_data(self) -> None:
         """Test with all numeric data"""
         df = pd.DataFrame(
             {
@@ -60,7 +60,7 @@ class TestDetectDataTypes:
         numeric_cols = result["numeric"]
         assert len(numeric_cols) >= 1  # At least some should be detected as numeric
 
-    def test_all_categorical_data(self):
+    def test_all_categorical_data(self) -> None:
         """Test with all categorical data"""
         df = pd.DataFrame(
             {
@@ -78,7 +78,7 @@ class TestDetectDataTypes:
         ) or ("object" in result and len(result["object"]) > 0)
         assert has_categorical
 
-    def test_empty_dataframe(self):
+    def test_empty_dataframe(self) -> None:
         """Test with empty DataFrame"""
         df = pd.DataFrame()
 
@@ -86,7 +86,7 @@ class TestDetectDataTypes:
         assert isinstance(result, dict)
         # Should handle empty DataFrame gracefully
 
-    def test_single_column(self):
+    def test_single_column(self) -> None:
         """Test with single column"""
         df = pd.DataFrame({"single_col": [1, 2, 3, 4, 5]})
 
@@ -97,7 +97,7 @@ class TestDetectDataTypes:
         total_cols = sum(len(cols) for cols in result.values())
         assert total_cols >= 1
 
-    def test_missing_values(self):
+    def test_missing_values(self) -> None:
         """Test with missing values"""
         df = pd.DataFrame(
             {
@@ -118,7 +118,7 @@ class TestDetectDataTypes:
 class TestCheckDataQuality:
     """Test check_data_quality function"""
 
-    def test_high_quality_data(self):
+    def test_high_quality_data(self) -> None:
         """Test with high quality data"""
         # Create clean data
         X, y = make_classification(n_samples=200, n_features=10, random_state=42)
@@ -132,7 +132,7 @@ class TestCheckDataQuality:
         assert quality_report["missing_percentage"] == 0.0  # No missing values
         assert quality_report["duplicate_rows"] >= 0
 
-    def test_data_with_missing_values(self):
+    def test_data_with_missing_values(self) -> None:
         """Test with data containing missing values"""
         df = pd.DataFrame(
             {
@@ -147,7 +147,7 @@ class TestCheckDataQuality:
         assert quality_report["missing_percentage"] > 0
         assert "missing_values" in quality_report
 
-    def test_data_with_duplicates(self):
+    def test_data_with_duplicates(self) -> None:
         """Test with duplicate rows"""
         df = pd.DataFrame(
             {
@@ -160,7 +160,7 @@ class TestCheckDataQuality:
 
         assert quality_report["duplicate_rows"] > 0
 
-    def test_data_quality_with_target_issues(self):
+    def test_data_quality_with_target_issues(self) -> None:
         """Test data quality basic functionality"""
         X = pd.DataFrame({"col1": [1, 2, 3, 4, 5], "col2": [1.1, 2.2, 3.3, 4.4, 5.5]})
 
@@ -169,7 +169,7 @@ class TestCheckDataQuality:
         assert isinstance(quality_report, dict)
         # Should return basic quality metrics
 
-    def test_constant_columns(self):
+    def test_constant_columns(self) -> None:
         """Test detection of constant columns"""
         df = pd.DataFrame(
             {
@@ -184,7 +184,7 @@ class TestCheckDataQuality:
         # Should identify data quality issues
         assert isinstance(quality_report, dict)
 
-    def test_class_imbalance_detection(self):
+    def test_class_imbalance_detection(self) -> None:
         """Test basic data quality functionality"""
         X = pd.DataFrame({"col1": range(100), "col2": np.random.randn(100)})
 
@@ -197,7 +197,7 @@ class TestCheckDataQuality:
 class TestEvaluateModel:
     """Test evaluate_model function"""
 
-    def test_evaluate_classification_model(self):
+    def test_evaluate_classification_model(self) -> None:
         """Test model evaluation for classification"""
         # Create test data
         X, y = make_classification(n_samples=200, n_features=10, random_state=42)
@@ -224,7 +224,7 @@ class TestEvaluateModel:
         assert isinstance(metrics, dict)
         assert len(metrics) >= 1  # Should have at least one metric
 
-    def test_evaluate_regression_model(self):
+    def test_evaluate_regression_model(self) -> None:
         """Test model evaluation for regression"""
         # Create test data
         X, y = make_regression(n_samples=200, n_features=10, random_state=42)
@@ -251,7 +251,7 @@ class TestEvaluateModel:
         assert isinstance(metrics, dict)
         assert len(metrics) >= 1  # Should have at least one metric
 
-    def test_evaluate_with_pandas_input(self):
+    def test_evaluate_with_pandas_input(self) -> None:
         """Test evaluation with pandas DataFrames"""
         X, y = make_classification(n_samples=100, n_features=5, random_state=42)
         X_df = pd.DataFrame(X, columns=[f"f_{i}" for i in range(X.shape[1])])
@@ -268,7 +268,7 @@ class TestEvaluateModel:
         assert isinstance(metrics, dict)
         assert len(metrics) >= 1
 
-    def test_evaluate_perfect_model(self):
+    def test_evaluate_perfect_model(self) -> None:
         """Test evaluation with a simple mock model"""
         # Create test data with enough samples for cross-validation
         X_test = pd.DataFrame(
@@ -288,7 +288,7 @@ class TestEvaluateModel:
         assert isinstance(metrics, dict)
         assert len(metrics) >= 1
 
-    def test_evaluate_insufficient_samples_for_cv(self):
+    def test_evaluate_insufficient_samples_for_cv(self) -> None:
         """Test evaluation with insufficient samples for cross-validation"""
         # Create minimal test data (insufficient for CV)
         X_train = pd.DataFrame([[0, 0], [1, 1]], columns=["feat1", "feat2"])
@@ -315,7 +315,7 @@ class TestEvaluateModel:
         has_fallback_metrics = "test_accuracy" in metrics and "cv_fallback" in metrics
         assert has_cv_metrics or has_fallback_metrics
 
-    def test_evaluate_with_invalid_task_type(self):
+    def test_evaluate_with_invalid_task_type(self) -> None:
         """Test behavior with invalid task type (should default to regression)"""
         X, y = make_classification(
             n_samples=50, n_features=5, n_informative=2, n_redundant=1, random_state=42
@@ -338,7 +338,7 @@ class TestEvaluateModel:
 class TestHelperFunctionsIntegration:
     """Test integration of helper functions"""
 
-    def test_data_pipeline_integration(self):
+    def test_data_pipeline_integration(self) -> None:
         """Test using helper functions in a typical data pipeline"""
         # Create realistic dataset with issues
         np.random.seed(42)
@@ -395,7 +395,7 @@ class TestHelperFunctionsIntegration:
                 )
                 assert isinstance(metrics, dict)
 
-    def test_helper_functions_with_edge_cases(self):
+    def test_helper_functions_with_edge_cases(self) -> None:
         """Test helper functions with edge cases"""
         # Very small dataset
         small_df = pd.DataFrame({"col1": [1, 2], "col2": ["A", "B"]})
@@ -408,7 +408,7 @@ class TestHelperFunctionsIntegration:
         quality_report = check_data_quality(small_df, small_y)
         assert isinstance(quality_report, dict)
 
-    def test_helper_functions_reproducibility(self):
+    def test_helper_functions_reproducibility(self) -> None:
         """Test that helper functions are deterministic"""
         df = pd.DataFrame({"col1": [1, 2, 3, 4, 5], "col2": ["A", "B", "C", "A", "B"]})
         y = pd.Series([0, 1, 0, 1, 0])
