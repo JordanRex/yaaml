@@ -9,7 +9,7 @@ description = "Yet Another AutoML - A native Python AutoML library"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.12"
-authors = [{ name = "Varun Rajan", email = "varun@example.com" }]
+authors = [{ name = "Varun Rajan", email = "varunrajan@protonmail.com" }]
 classifiers = [
     "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",

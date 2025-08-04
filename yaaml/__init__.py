@@ -3,11 +3,7 @@
 A lightweight, native AutoML library built on scikit-learn.
 """
 
-__version__ = "0.1.0"
-__author__ = "Varun Rajan"
-__email__ = "varun@example.com"
-__description__ = "Yet Another AutoML - Native Python AutoML library"
-
+from ._version import get_version
 from .encoding import NativeEncoder, TargetEncoder, encode_categorical_features
 from .feature_engineering import (
     BinningTransformer,
@@ -23,8 +19,6 @@ from .helper_funcs import (
     print_model_summary,
     split_features_target,
 )
-
-# Import main classes
 from .main import YAAMLAutoML
 from .miss_imputation import DataFrameImputer, impute_missing_values
 from .native_algorithms import AlgorithmFactory, NativeAlgorithmSelector
@@ -34,6 +28,12 @@ from .sampling import (
     analyze_class_distribution,
     apply_sampling,
 )
+
+# Package metadata
+__version__ = get_version()
+__author__ = "Varun Rajan"
+__email__ = "varunrajan@protonmail.com"
+__description__ = "Yet Another AutoML - Native Python AutoML library"
 
 __all__ = [
     # Main AutoML class

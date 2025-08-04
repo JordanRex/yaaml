@@ -1,8 +1,8 @@
 # YAAML (Yet Another AutoML)
 
-![yaaml logo](./yaaml-logo.png)
+<img src="./yaaml-logo.png" alt="YAAML Logo" width="300">
 
-[![Test PyPI version](https://img.shields.io/badge/Test%20PyPI-v0.1.0-blue)](https://test.pypi.org/project/yaaml/)
+[![Test PyPI version](https://img.shields.io/badge/Test%20PyPI-v0.1.2-blue)](https://test.pypi.org/project/yaaml/)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![CI/CD](https://github.com/JordanRex/yaaml/actions/workflows/ci-cd.yml/badge.svg?branch=master)](https://github.com/JordanRex/yaaml/actions)
@@ -24,7 +24,7 @@ pip install yaaml
 pip install git+https://github.com/JordanRex/yaaml.git
 
 # From GitHub releases
-pip install https://github.com/JordanRex/yaaml/archive/refs/tags/v0.1.0.tar.gz
+pip install https://github.com/JordanRex/yaaml/archive/refs/tags/v0.1.2.tar.gz
 ```
 
 ### Basic Usage
@@ -79,7 +79,7 @@ predictions = automl.predict(new_data)
 
 ## Project Status
 
-**Current**: v0.1.0 - Production ready with comprehensive Python 3.12+ modernization
+**Current**: v0.1.2 - Production ready with comprehensive Python 3.12+ modernization
 
 - ✅ **Complete**: Classification, regression, feature engineering, hyperparameter optimization
 - ✅ **Tested**: Realistic test suite achieving 70% accuracy on challenging datasets
