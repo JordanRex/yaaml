@@ -9,6 +9,8 @@
 
 **Lightweight, production-ready AutoML built entirely on scikit-learn with Python 3.12+ modernization.**
 
+> Catalog: [ItamiForge](https://itamiforge.github.io/itamiforge/docs/projects/#yaaml)
+
 ## Quick Start
 
 ### Installation
