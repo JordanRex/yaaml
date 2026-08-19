@@ -1,0 +1,14 @@
+catalog: true
+slug: yaaml
+title: YAAML
+summary: Lightweight AutoML built on scikit-learn for Python 3.12+.
+status: experimental
+category: library
+featured: false
+visibility: public
+tags:
+  - python
+  - machine-learning
+  - automl
+  - scikit-learn
+install: pip install git+https://github.com/JordanRex/yaaml.git
